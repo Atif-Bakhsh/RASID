@@ -143,3 +143,4 @@ backups/
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+.codex/
