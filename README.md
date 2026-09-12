@@ -1,98 +1,103 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# RASID
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+**Arabic-first personal financial clarity, built to make backend engineering inspectable.**
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+RASID is a NestJS + PostgreSQL portfolio backend. A user signs in, creates manual accounts, records or imports synthetic transactions, and sees monthly totals that reconcile to the stored rows. Every financial amount is a decimal string. Arabic category names, errors, and insight explanations are first-class API fields.
 
-## Description
+This is a demo-data system. It does not connect to banks, accept banking credentials, move money, trade, use live market feeds, or provide financial advice. The demonstration frontend is specified in [FRONTEND_HANDOFF.md](docs/FRONTEND_HANDOFF.md) for the next implementation step.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Run the complete backend
 
-## Project setup
+Requires Docker with Compose. Local TypeScript development also uses Node 24 LTS and pnpm 11.7.0.
 
-```bash
-$ npm install
+```sh
+cp .env.example .env
+docker compose up --build -d
+docker compose exec api node dist/database/seed-demo.js
 ```
 
-## Compile and run the project
+The opt-in seed reads `DEMO_EMAIL`, `DEMO_PASSWORD`, and `DEMO_MONTH` from `.env`. It never overwrites an existing user. The example credentials are **atif@example.test / Synthetic-Demo-Only-2026!** and the demonstration month is **September 2026**. These are intentionally public, local-demo credentials, not production secrets.
 
-```bash
-# development
-$ npm run start
+- Interactive API: [localhost:3000/docs](http://localhost:3000/docs)
+- OpenAPI JSON: [localhost:3000/openapi.json](http://localhost:3000/openapi.json)
+- Service info: [localhost:3000/api/v1](http://localhost:3000/api/v1)
+- Liveness: `/api/v1/health/live`; database/schema readiness: `/api/v1/health/ready`
 
-# watch mode
-$ npm run start:dev
+PostgreSQL is bound to `127.0.0.1:55432`. The migration service finishes before the API starts. `docker compose stop` stops the demo while preserving its database volume.
 
-# production mode
-$ npm run start:prod
+## What is implemented
+
+| Module | Working behavior |
+| --- | --- |
+| Auth | Register, login, rotating refresh cookie, logout, session list/revoke, immediate revocation of associated access tokens |
+| Accounts | Create/list/details/update; typed accounts, supported currencies, dated balance snapshots; nonempty account deletion is rejected |
+| Transactions | Create/update/delete, categorization, ownership, exact amounts, duplicate fingerprints, date/category/currency/direction filters, literal search, stable offset pagination |
+| CSV imports | Bounded UTF-8 upload, strict headers, row errors, preview persistence, file/account deduplication, explicit partial acceptance, transactional and idempotent commit |
+| Categories | Shared Arabic/English defaults and private user categories; one-level hierarchy |
+| Analytics | Income, spending, net, category totals, previous-month comparison, separately labeled recurring obligation estimates |
+| Budgets | One category/month budget per user, currency-specific spending and computed remaining amount |
+| Obligations | Manual recurring monthly estimates, due day 1–28, activation/deactivation |
+| Insights | Deterministic versioned rules with bilingual explanations, source facts, and thresholds |
+| Operations | Validated configuration, structured logs, request IDs, health/readiness, migrations, Docker, CI/release image workflow, backup/restore tools |
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Client[API explorer / future Arabic web UI] --> HTTP[Request ID + body limits + origin checks]
+    HTTP --> Guards[Rate limit + JWT + active session]
+    Guards --> DTO[DTO validation]
+    DTO --> Controllers[Thin feature controllers]
+    Controllers --> Services[Feature services and ownership predicates]
+    Services --> ORM[TypeORM repositories / parameterized SQL]
+    ORM --> PG[(PostgreSQL)]
+    PG --> Facts[Exact aggregates]
+    Facts --> Insights[Deterministic insight rules]
 ```
 
-## Run tests
+One deployment, one relational database, no message broker or caching service. Read the [architecture and tradeoffs](docs/ARCHITECTURE.md) and [decision ledger](docs/DECISIONS.md).
 
-```bash
-# unit tests
-$ npm run test
+## Work locally
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```sh
+npm install --global pnpm@11.7.0
+pnpm install --frozen-lockfile
+cp .env.example .env
+docker compose up -d db
+pnpm migration:run
+pnpm seed:demo
+pnpm start:dev
 ```
 
-## Deployment
+Use this workflow instead of the Compose API when developing; stop an already-running Compose API first to free port 3000. `pnpm migration:run` is explicit: startup never synchronizes tables or silently runs migrations.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## Verify
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+```sh
+pnpm check
+TEST_DATABASE_URL=postgresql://rasid:rasid-local-demo-only@localhost:55432/postgres pnpm test:e2e
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+`pnpm check` checks formatting, lint, strict types, unit tests, and compilation. The HTTP suite uses the real PostgreSQL engine and the same request pipeline as production. It creates a random `rasid_test_*` database and removes only that database afterward. The local/CI database role therefore needs `CREATEDB`; application production credentials should not have it.
 
-## Resources
+The tests exercise ownership failures, invalid bodies, replayed tokens, decimal reconciliation, upload boundaries, concurrent duplicate requests, and rollback under an injected PostgreSQL failure. See [verification evidence](docs/VERIFICATION.md) for checks actually executed; a workflow file is not evidence of a remote CI run.
 
-Check out a few resources that may come in handy when working with NestJS:
+## Explore and learn
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+- [API examples](docs/API_EXAMPLES.md): complete login/account/transaction/import flow.
+- [Learning guide](docs/LEARNING_GUIDE.md): request traces, module responsibilities, rejected alternatives, exercises.
+- [Frontend handoff](docs/FRONTEND_HANDOFF.md): screens, auth transport, response shapes, states, and acceptance criteria.
+- [Operations runbook](docs/OPERATIONS.md): configuration, deployment, diagnosis, backup and restore.
+- [Query-plan note](docs/QUERY_PLAN.md): pagination choice and reproducible index experiment.
+- [Demo rehearsal](docs/DEMO_SCRIPT.md): a short engineering walkthrough you can record.
+- [Ownership tracker](docs/OWNERSHIP_TRACKER.md): prove you can explain and modify each feature.
 
-## Support
+## Boundaries and limitations
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+The API is implemented and reproducible locally. Public hosting, a recorded demo, and a green GitHub CI run require publishing this repository and configuring a hosting target; they are not claimed here.
 
-## Stay in touch
+Only SAR/USD/EUR with two-decimal amounts are supported. Different currencies are never summed together. Balances are manual snapshots, not a reconstructed ledger. Date-only transaction booking dates determine calendar months; timezone is a user preference, not an implicit date conversion. Transfers, refunds linked to original purchases, debt amortization, and historical obligation payment tracking are outside this MVP.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+CSV deduplication can consider two identical same-day purchases duplicates unless they have distinct references. A committed import remains committed even if its resulting transactions are later edited or deleted. Refresh rotation intentionally treats simultaneous reuse as suspicious; the frontend must serialize refresh requests across tabs. The process-local rate limiter resets on restart and assumes one API instance.
 
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+There is no password reset/email delivery, email verification, MFA, automatic data-retention scheduler, or AI advisor. Demo labels do not automatically sanitize user uploads: only synthetic or already sanitized records belong in this project. Never upload real account statements to a public portfolio demo.

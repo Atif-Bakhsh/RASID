@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repository-Native Backend Review"
+  short_description: "Make backend changes fit their repository"
+  default_prompt: "Use $repository-native-backend-review to implement this backend change using the repository’s established patterns."
