@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck } from 'lucide-react';
 
-import { useLocale } from "@/providers/locale-provider";
+import { useLocale } from '@/providers/locale-provider';
 
 export function DemoNotice() {
   const { messages } = useLocale();

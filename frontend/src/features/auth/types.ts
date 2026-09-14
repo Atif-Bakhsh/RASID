@@ -1,4 +1,4 @@
-import type { AuthSession, Locale } from "@/lib/api/contracts";
+import type { AuthSession, Locale } from '@/lib/api/contracts';
 
 export interface LoginInput {
   email: string;
@@ -11,10 +11,7 @@ export interface RegisterInput extends LoginInput {
 }
 
 export type AuthStatus =
-  | "bootstrapping"
-  | "authenticated"
-  | "anonymous"
-  | "unavailable";
+  'bootstrapping' | 'authenticated' | 'anonymous' | 'unavailable';
 
 export interface AuthState {
   session: AuthSession | null;

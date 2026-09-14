@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   createContext,
@@ -7,23 +7,24 @@ import {
   useMemo,
   useState,
   type ReactNode,
-} from "react";
+} from 'react';
 
-import type { Locale } from "@/lib/api/contracts";
-import { messages, type Messages } from "@/lib/i18n/messages";
+import type { Locale } from '@/lib/api/contracts';
+import { messages, type Messages } from '@/lib/i18n/messages';
 
 interface LocaleContextValue {
   locale: Locale;
-  direction: "rtl" | "ltr";
+  direction: 'rtl' | 'ltr';
   messages: Messages;
+  setLocale: (locale: Locale) => void;
   toggleLocale: () => void;
 }
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocale] = useState<Locale>("ar");
-  const direction = locale === "ar" ? "rtl" : "ltr";
+  const [locale, setLocale] = useState<Locale>('ar');
+  const direction = locale === 'ar' ? 'rtl' : 'ltr';
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -35,19 +36,23 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       locale,
       direction,
       messages: messages[locale],
-      toggleLocale: () => setLocale((current) => (current === "ar" ? "en" : "ar")),
+      setLocale,
+      toggleLocale: () =>
+        setLocale((current) => (current === 'ar' ? 'en' : 'ar')),
     }),
     [direction, locale],
   );
 
-  return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
+  return (
+    <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
+  );
 }
 
 export function useLocale(): LocaleContextValue {
   const context = useContext(LocaleContext);
 
   if (!context) {
-    throw new Error("useLocale must be used inside LocaleProvider.");
+    throw new Error('useLocale must be used inside LocaleProvider.');
   }
 
   return context;

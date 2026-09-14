@@ -1,67 +1,72 @@
-"use client";
+'use client';
 
 import {
   ChartNoAxesCombined,
   CircleDollarSign,
   FileUp,
   LayoutDashboard,
+  LogOut,
   Menu,
   ReceiptText,
   Settings2,
   X,
   type LucideIcon,
-} from "lucide-react";
-import { useState, type ReactNode } from "react";
+} from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState, type ReactNode } from 'react';
 
-import type { Messages } from "@/lib/i18n/messages";
-import { useLocale } from "@/providers/locale-provider";
+import type { Messages } from '@/lib/i18n/messages';
+import { useLocale } from '@/providers/locale-provider';
+import { useAuth } from '@/providers/auth-provider';
 
-import { BrandMark } from "./brand-mark";
-import { LanguageToggle } from "./language-toggle";
-import { PageContainer } from "./page-container";
+import { BrandMark } from './brand-mark';
+import { LanguageToggle } from './language-toggle';
+import { PageContainer } from './page-container';
 
 interface NavigationItem {
   icon: LucideIcon;
   label: keyof Pick<
     Messages,
-    | "overview"
-    | "accounts"
-    | "transactions"
-    | "imports"
-    | "budgets"
-    | "settings"
+    | 'overview'
+    | 'accounts'
+    | 'transactions'
+    | 'imports'
+    | 'budgets'
+    | 'settings'
   >;
-  current?: boolean;
+  href?: '/' | '/accounts' | '/transactions' | '/imports';
 }
 
 const navigationItems: NavigationItem[] = [
-  { icon: LayoutDashboard, label: "overview", current: true },
-  { icon: CircleDollarSign, label: "accounts" },
-  { icon: ReceiptText, label: "transactions" },
-  { icon: FileUp, label: "imports" },
-  { icon: ChartNoAxesCombined, label: "budgets" },
-  { icon: Settings2, label: "settings" },
+  { icon: LayoutDashboard, label: 'overview', href: '/' },
+  { icon: CircleDollarSign, label: 'accounts', href: '/accounts' },
+  { icon: ReceiptText, label: 'transactions', href: '/transactions' },
+  { icon: FileUp, label: 'imports', href: '/imports' },
+  { icon: ChartNoAxesCombined, label: 'budgets' },
+  { icon: Settings2, label: 'settings' },
 ];
 
 function Navigation({ onNavigate }: { onNavigate?: () => void }) {
   const { messages } = useLocale();
+  const pathname = usePathname();
 
   return (
     <nav className="primary-navigation" aria-label={messages.navigationLabel}>
       <ul>
-        {navigationItems.map(({ current, icon: Icon, label }) => (
+        {navigationItems.map(({ href, icon: Icon, label }) => (
           <li key={label}>
-            {current ? (
-              <a
-                className="navigation-link navigation-link--current"
-                href="#main-content"
-                aria-current="page"
+            {href ? (
+              <Link
+                className={`navigation-link${pathname === href ? ' navigation-link--current' : ''}`}
+                href={href}
+                aria-current={pathname === href ? 'page' : undefined}
                 onClick={onNavigate}
               >
                 <Icon size={19} strokeWidth={1.8} aria-hidden="true" />
                 <span>{messages[label]}</span>
                 <span className="navigation-current-dot" aria-hidden="true" />
-              </a>
+              </Link>
             ) : (
               <span className="navigation-link" aria-disabled="true">
                 <Icon size={19} strokeWidth={1.7} aria-hidden="true" />
@@ -78,7 +83,30 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { messages } = useLocale();
+  const { signOut } = useAuth();
+  const [loggingOut, setLoggingOut] = useState(false);
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
+  const pathname = usePathname();
+  const currentLabel =
+    pathname === '/accounts'
+      ? messages.accounts
+      : pathname === '/transactions'
+        ? messages.transactions
+        : pathname === '/imports'
+          ? messages.imports
+          : messages.overview;
+
+  async function handleLogout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await signOut();
+    } catch {
+      // The auth provider carries a failed server-logout warning to login.
+    } finally {
+      setLoggingOut(false);
+    }
+  }
 
   return (
     <div className="application-frame">
@@ -112,7 +140,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       <div
-        className={`mobile-navigation-panel${mobileNavigationOpen ? " is-open" : ""}`}
+        className={`mobile-navigation-panel${mobileNavigationOpen ? ' is-open' : ''}`}
         id="mobile-navigation"
         aria-hidden={!mobileNavigationOpen}
       >
@@ -128,9 +156,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Navigation />
           <div className="sidebar-footer">
             <span className="sidebar-stage-index" dir="ltr">
-              00
+              RASID
             </span>
-            <span>{messages.stageLabel}</span>
+            <span>{messages.productSubtitle}</span>
           </div>
         </aside>
 
@@ -138,11 +166,24 @@ export function AppShell({ children }: { children: ReactNode }) {
           <header className="topbar">
             <div>
               <span className="topbar-kicker">{messages.currentSection}</span>
-              <strong>{messages.overview}</strong>
+              <strong>{currentLabel}</strong>
             </div>
             <LanguageToggle />
           </header>
-          <PageContainer>{children}</PageContainer>
+          <PageContainer>
+            {children}
+            <footer className="app-session-footer">
+              <button
+                className="button button--secondary"
+                type="button"
+                disabled={loggingOut}
+                onClick={() => void handleLogout()}
+              >
+                <LogOut size={18} aria-hidden="true" />
+                {loggingOut ? messages.loggingOut : messages.logoutAction}
+              </button>
+            </footer>
+          </PageContainer>
         </main>
       </div>
     </div>

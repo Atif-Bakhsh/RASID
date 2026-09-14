@@ -1,16 +1,16 @@
-import { getApiBaseUrl } from "@/config/env";
+import { getApiBaseUrl } from '@/config/env';
 
-import type { ApiFailure } from "./contracts";
-import { ApiClientError, ApiNetworkError, isApiFailure } from "./errors";
+import type { ApiFailure } from './contracts';
+import { ApiClientError, ApiNetworkError, isApiFailure } from './errors';
 
-export interface ApiRequestOptions extends Omit<RequestInit, "body"> {
+export interface ApiRequestOptions extends Omit<RequestInit, 'body'> {
   accessToken?: string | null;
   body?: BodyInit | object | null;
 }
 
-function isNativeBody(body: ApiRequestOptions["body"]): body is BodyInit {
+function isNativeBody(body: ApiRequestOptions['body']): body is BodyInit {
   return (
-    typeof body === "string" ||
+    typeof body === 'string' ||
     body instanceof FormData ||
     body instanceof URLSearchParams ||
     body instanceof Blob ||
@@ -33,13 +33,13 @@ export async function apiRequest<T>(
   const headers = new Headers(initialHeaders);
 
   if (accessToken) {
-    headers.set("Authorization", `Bearer ${accessToken}`);
+    headers.set('Authorization', `Bearer ${accessToken}`);
   }
 
   let requestBody: BodyInit | null | undefined;
 
   if (body && !isNativeBody(body)) {
-    headers.set("Content-Type", "application/json");
+    headers.set('Content-Type', 'application/json');
     requestBody = JSON.stringify(body);
   } else {
     requestBody = body;
@@ -66,18 +66,18 @@ export async function apiRequest<T>(
       ? payload
       : {
           error: {
-            code: "UNEXPECTED_RESPONSE",
-            message: "The API returned an unexpected response.",
-            messageAr: "أعاد الخادم استجابة غير متوقعة.",
+            code: 'UNEXPECTED_RESPONSE',
+            message: 'The API returned an unexpected response.',
+            messageAr: 'أعاد الخادم استجابة غير متوقعة.',
           },
-          requestId: response.headers.get("x-request-id") ?? "unavailable",
+          requestId: response.headers.get('x-request-id') ?? 'unavailable',
           timestamp: new Date().toISOString(),
         };
 
     throw new ApiClientError(
       failure,
       response.status,
-      response.headers.get("retry-after") ?? undefined,
+      response.headers.get('retry-after') ?? undefined,
     );
   }
 

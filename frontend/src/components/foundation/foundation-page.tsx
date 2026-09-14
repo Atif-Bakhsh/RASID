@@ -1,21 +1,16 @@
-"use client";
+'use client';
 
-import {
-  ArrowUpLeft,
-  Braces,
-  KeyRound,
-  LayoutPanelTop,
-} from "lucide-react";
+import { ArrowUpLeft, Braces, KeyRound, LayoutPanelTop } from 'lucide-react';
 
-import { useLocale } from "@/providers/locale-provider";
+import { useLocale } from '@/providers/locale-provider';
 
 const foundationCards = [
-  { icon: Braces, title: "apiLabel", description: "apiDescription" },
-  { icon: KeyRound, title: "authLabel", description: "authDescription" },
+  { icon: Braces, title: 'apiLabel', description: 'apiDescription' },
+  { icon: KeyRound, title: 'authLabel', description: 'authDescription' },
   {
     icon: LayoutPanelTop,
-    title: "interfaceLabel",
-    description: "interfaceDescription",
+    title: 'interfaceLabel',
+    description: 'interfaceDescription',
   },
 ] as const;
 

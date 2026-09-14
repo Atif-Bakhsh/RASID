@@ -1,5 +1,5 @@
-import { FoundationPage } from "@/components/foundation/foundation-page";
+import { OverviewPage } from '@/features/overview/overview-page';
 
 export default function Home() {
-  return <FoundationPage />;
+  return <OverviewPage />;
 }

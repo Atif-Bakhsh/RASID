@@ -1,6 +1,6 @@
-export type Locale = "ar" | "en";
-export type Currency = "SAR" | "USD" | "EUR";
-export type Direction = "INCOME" | "EXPENSE";
+export type Locale = 'ar' | 'en';
+export type Currency = 'SAR' | 'USD' | 'EUR';
+export type Direction = 'INCOME' | 'EXPENSE';
 export type Money = string;
 
 export interface Page<T> {
@@ -30,12 +30,12 @@ export interface UserProfile {
   locale: Locale;
   timezone: string;
   createdAt: string;
-  dataMode: "DEMO_ONLY";
+  dataMode: 'DEMO_ONLY';
 }
 
 export interface AuthSession {
   accessToken: string;
-  tokenType: "Bearer";
+  tokenType: 'Bearer';
   expiresIn: number;
   sessionId: string;
   user: UserProfile;

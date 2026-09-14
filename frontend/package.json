@@ -11,7 +11,9 @@
     "start": "next start --port 5173",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
-    "check": "pnpm lint && pnpm typecheck && pnpm build"
+    "test": "TMPDIR=.next vitest run",
+    "smoke:ledger": "node scripts/smoke-ledger.mjs",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {
     "@fontsource/ibm-plex-sans-arabic": "^5.3.0",
@@ -23,12 +25,17 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.3.5",
-    "typescript": "^5"
+    "jsdom": "^30.0.1",
+    "typescript": "^5",
+    "vitest": "^5.0.0"
   },
   "packageManager": "pnpm@11.7.0"
 }
