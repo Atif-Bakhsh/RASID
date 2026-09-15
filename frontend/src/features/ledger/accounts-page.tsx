@@ -132,7 +132,9 @@ export function AccountsPage() {
                         {formatMoney(account.balance)}{' '}
                         <small>{account.currency}</small>
                       </span>
-                      <time dir="ltr">{account.balanceAsOf}</time>
+                      <time dateTime={account.balanceAsOf} dir="ltr">
+                        {account.balanceAsOf}
+                      </time>
                     </button>
                   </li>
                 ))}
@@ -178,7 +180,9 @@ export function AccountsPage() {
                 <div>
                   <dt>{t.balanceAsOf}</dt>
                   <dd>
-                    <time dir="ltr">{detail.data.balanceAsOf}</time>
+                    <time dateTime={detail.data.balanceAsOf} dir="ltr">
+                      {detail.data.balanceAsOf}
+                    </time>
                   </dd>
                 </div>
                 <div>
@@ -188,7 +192,9 @@ export function AccountsPage() {
                 <div>
                   <dt>{t.createdAt}</dt>
                   <dd>
-                    <time dir="ltr">{detail.data.createdAt}</time>
+                    <time dateTime={detail.data.createdAt} dir="ltr">
+                      {detail.data.createdAt}
+                    </time>
                   </dd>
                 </div>
               </dl>

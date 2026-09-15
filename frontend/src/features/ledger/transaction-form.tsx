@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useId, useState, type FormEvent } from 'react';
 import type { Direction } from '@/lib/api/contracts';
 import { ApiClientError } from '@/lib/api/errors';
 import { useLocale } from '@/providers/locale-provider';
@@ -29,6 +29,7 @@ export function TransactionForm({
 }) {
   const { locale } = useLocale();
   const t = ledgerMessages[locale];
+  const fieldId = useId();
   const [accountId, setAccountId] = useState(
     transaction?.accountId ?? accounts[0]?.id ?? '',
   );
@@ -140,6 +141,7 @@ export function TransactionForm({
           <label>
             <span>{t.postedAt}</span>
             <input
+              aria-label={t.postedAt}
               type="date"
               name="postedAt"
               dir="ltr"
@@ -148,23 +150,34 @@ export function TransactionForm({
               value={postedAt}
               onChange={(event) => setPostedAt(event.target.value)}
               aria-invalid={!!errors.postedAt}
+              aria-describedby={
+                errors.postedAt ? `${fieldId}-date-error` : undefined
+              }
             />
             {errors.postedAt && (
-              <small className="field-error">{errors.postedAt}</small>
+              <small id={`${fieldId}-date-error`} className="field-error">
+                {errors.postedAt}
+              </small>
             )}
           </label>
           <label>
             <span>{t.amount}</span>
             <input
+              aria-label={t.amount}
               name="amount"
               dir="ltr"
               inputMode="decimal"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
               aria-invalid={!!errors.amount}
+              aria-describedby={
+                errors.amount ? `${fieldId}-amount-error` : undefined
+              }
             />
             {errors.amount && (
-              <small className="field-error">{errors.amount}</small>
+              <small id={`${fieldId}-amount-error`} className="field-error">
+                {errors.amount}
+              </small>
             )}
           </label>
           <label>
@@ -198,14 +211,20 @@ export function TransactionForm({
           <label className="ledger-form-wide">
             <span>{t.merchant}</span>
             <input
+              aria-label={t.merchant}
               name="merchant"
               value={merchant}
               maxLength={160}
               onChange={(event) => setMerchant(event.target.value)}
               aria-invalid={!!errors.merchant}
+              aria-describedby={
+                errors.merchant ? `${fieldId}-merchant-error` : undefined
+              }
             />
             {errors.merchant && (
-              <small className="field-error">{errors.merchant}</small>
+              <small id={`${fieldId}-merchant-error`} className="field-error">
+                {errors.merchant}
+              </small>
             )}
           </label>
           <label className="ledger-form-wide">
@@ -217,12 +236,18 @@ export function TransactionForm({
               value={reference}
               maxLength={100}
               onChange={(event) => setReference(event.target.value)}
-              aria-describedby="reference-hint"
+              aria-describedby={
+                errors.reference
+                  ? `reference-hint ${fieldId}-reference-error`
+                  : 'reference-hint'
+              }
               aria-invalid={!!errors.reference}
             />
             <small id="reference-hint">{t.referenceHint}</small>
             {errors.reference && (
-              <small className="field-error">{errors.reference}</small>
+              <small id={`${fieldId}-reference-error`} className="field-error">
+                {errors.reference}
+              </small>
             )}
           </label>
         </div>

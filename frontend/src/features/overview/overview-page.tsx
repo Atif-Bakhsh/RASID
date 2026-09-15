@@ -149,7 +149,9 @@ export function MonthlySummary({ data }: { data: MonthlyAnalytics }) {
       <div className="comparison">
         <div>
           <h3>{t.comparison}</h3>
-          <time dir="ltr">{data.comparison.previousMonth}</time>
+          <time dateTime={data.comparison.previousMonth} dir="ltr">
+            {data.comparison.previousMonth}
+          </time>
         </div>
         <dl>
           <div>
@@ -314,7 +316,10 @@ export function ObligationEstimates({ data }: { data: MonthlyAnalytics }) {
               <div>
                 <strong>{item.name}</strong>
                 <span>
-                  {t.dueDate}: <time dir="ltr">{item.dueDate}</time>
+                  {t.dueDate}:{' '}
+                  <time dateTime={item.dueDate} dir="ltr">
+                    {item.dueDate}
+                  </time>
                 </span>
               </div>
               <Money value={item.amount} currency={item.currency} />

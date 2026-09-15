@@ -384,7 +384,9 @@ export function ImportsPage() {
                     {t.total}: <bdi dir="ltr">{item.summary.total}</bdi> ·{' '}
                     {t.invalid}: <bdi dir="ltr">{item.summary.invalid}</bdi>
                   </span>
-                  <time dir="ltr">{item.createdAt}</time>
+                  <time dateTime={item.createdAt} dir="ltr">
+                    {item.createdAt}
+                  </time>
                   <span className="text-button">{t.openDetails}</span>
                 </button>
               ))}

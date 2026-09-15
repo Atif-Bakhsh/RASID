@@ -2,9 +2,9 @@
 
 **Arabic-first personal financial clarity, built to make backend engineering inspectable.**
 
-RASID is a NestJS + PostgreSQL portfolio backend. A user signs in, creates manual accounts, records or imports synthetic transactions, and sees monthly totals that reconcile to the stored rows. Every financial amount is a decimal string. Arabic category names, errors, and insight explanations are first-class API fields.
+RASID is a Next.js, NestJS, and PostgreSQL portfolio application. A user signs in, creates manual accounts, records or imports synthetic transactions, and sees monthly totals that reconcile to the stored rows. Every financial amount is a decimal string. Arabic category names, errors, and insight explanations are first-class API fields.
 
-This is a demo-data system. It does not connect to banks, accept banking credentials, move money, trade, use live market feeds, or provide financial advice. The demonstration frontend is specified in [FRONTEND_HANDOFF.md](docs/FRONTEND_HANDOFF.md) for the next implementation step.
+This is a demo-data system. It does not connect to banks, accept banking credentials, move money, trade, use live market feeds, or provide financial advice. The Arabic-first demonstration frontend lives in [`frontend/`](frontend/); its contracts remain documented in [FRONTEND_HANDOFF.md](docs/FRONTEND_HANDOFF.md).
 
 ## Run the complete backend
 
@@ -71,6 +71,18 @@ pnpm start:dev
 
 Use this workflow instead of the Compose API when developing; stop an already-running Compose API first to free port 3000. `pnpm migration:run` is explicit: startup never synchronizes tables or silently runs migrations.
 
+In a second terminal, start the frontend:
+
+```sh
+cd frontend
+cp .env.example .env.local
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+Open `http://localhost:5173`. The browser origin must be present in backend
+`CORS_ORIGINS`.
+
 ## Verify
 
 ```sh
@@ -86,7 +98,8 @@ The tests exercise ownership failures, invalid bodies, replayed tokens, decimal 
 
 - [API examples](docs/API_EXAMPLES.md): complete login/account/transaction/import flow.
 - [Learning guide](docs/LEARNING_GUIDE.md): request traces, module responsibilities, rejected alternatives, exercises.
-- [Frontend handoff](docs/FRONTEND_HANDOFF.md): screens, auth transport, response shapes, states, and acceptance criteria.
+- [Frontend handoff](docs/FRONTEND_HANDOFF.md): implemented screens, auth transport, response shapes, states, and acceptance criteria.
+- [Deployment checklist](docs/DEPLOYMENT_CHECKLIST.md): production topology, secrets, migrations, domain, cookie, CORS, and smoke checks.
 - [Operations runbook](docs/OPERATIONS.md): configuration, deployment, diagnosis, backup and restore.
 - [Query-plan note](docs/QUERY_PLAN.md): pagination choice and reproducible index experiment.
 - [Demo rehearsal](docs/DEMO_SCRIPT.md): a short engineering walkthrough you can record.

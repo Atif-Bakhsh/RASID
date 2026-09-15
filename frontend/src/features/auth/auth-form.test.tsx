@@ -22,6 +22,13 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: mocks.replace }),
 }));
 
+vi.mock('@/config/env', () => ({
+  getDemoCredentials: () => ({
+    email: 'atif@example.test',
+    password: 'Synthetic-Demo-Only-2026!',
+  }),
+}));
+
 vi.mock('@/features/auth/api', () => ({
   login: mocks.login,
   register: mocks.register,

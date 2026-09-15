@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "TMPDIR=.next vitest run",
     "smoke:ledger": "node scripts/smoke-ledger.mjs",
+    "smoke:management": "node scripts/smoke-management.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {

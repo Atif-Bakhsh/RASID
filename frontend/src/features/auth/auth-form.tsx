@@ -5,15 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 
+import { getDemoCredentials } from '@/config/env';
 import { login, register } from '@/features/auth/api';
 import { ApiClientError, ApiNetworkError } from '@/lib/api/errors';
 import { useAuth } from '@/providers/auth-provider';
 import { useLocale } from '@/providers/locale-provider';
 
 import { AuthErrorNotice } from './auth-error-notice';
-
-const DEMO_EMAIL = 'atif@example.test';
-const DEMO_PASSWORD = 'Synthetic-Demo-Only-2026!';
 
 type AuthMode = 'login' | 'register';
 type FieldName = 'email' | 'password' | 'timezone';
@@ -75,6 +73,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   const { acceptSession, dismissLogoutWarning, logoutWarning } = useAuth();
   const { locale, messages } = useLocale();
   const router = useRouter();
+  const demoCredentials = getDemoCredentials();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [timezone, setTimezone] = useState('Asia/Riyadh');
@@ -149,8 +148,9 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   }
 
   function fillDemoCredentials() {
-    setEmail(DEMO_EMAIL);
-    setPassword(DEMO_PASSWORD);
+    if (!demoCredentials) return;
+    setEmail(demoCredentials.email);
+    setPassword(demoCredentials.password);
     setFieldErrors({});
     setSubmissionError(null);
     setStatusMessage(messages.demoCredentialsFilled);
@@ -327,13 +327,13 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         </Link>
       </p>
 
-      {isLogin && (
+      {isLogin && demoCredentials && (
         <aside className="demo-account" aria-labelledby="demo-account-title">
           <Sparkles size={20} strokeWidth={1.7} aria-hidden="true" />
           <div>
             <strong id="demo-account-title">{messages.demoAccountTitle}</strong>
             <p>{messages.demoAccountDescription}</p>
-            <span dir="ltr">{DEMO_EMAIL}</span>
+            <span dir="ltr">{demoCredentials.email}</span>
           </div>
           <button
             type="button"

@@ -9,29 +9,15 @@ export interface Messages {
   openNavigation: string;
   closeNavigation: string;
   currentSection: string;
-  planned: string;
   overview: string;
   accounts: string;
   transactions: string;
   imports: string;
   budgets: string;
   settings: string;
-  foundationEyebrow: string;
-  foundationTitle: string;
-  foundationDescription: string;
-  stageLabel: string;
-  readyLabel: string;
-  apiLabel: string;
-  apiDescription: string;
-  authLabel: string;
-  authDescription: string;
-  interfaceLabel: string;
-  interfaceDescription: string;
-  nextTitle: string;
-  nextDescription: string;
-  reviewerNote: string;
-  authenticationStage: string;
-  sessionStatus: string;
+  privacy: string;
+  terms: string;
+  legalNavigation: string;
   authEyebrow: string;
   authWelcomeTitle: string;
   authWelcomeDescription: string;
@@ -83,17 +69,9 @@ export interface Messages {
   unavailableSessionTitle: string;
   unavailableSessionDescription: string;
   retryConnection: string;
-  sessionReadyEyebrow: string;
-  sessionReadyTitle: string;
-  sessionReadyDescription: string;
-  signedInAs: string;
-  sessionIdentifier: string;
-  sessionSecurityTitle: string;
-  sessionSecurityDescription: string;
   logoutAction: string;
   loggingOut: string;
   logoutFailed: string;
-  dashboardPending: string;
 }
 
 export const messages: Record<Locale, Messages> = {
@@ -106,34 +84,15 @@ export const messages: Record<Locale, Messages> = {
     openNavigation: 'افتح قائمة التنقل',
     closeNavigation: 'أغلق قائمة التنقل',
     currentSection: 'القسم الحالي',
-    planned: 'لاحقًا',
     overview: 'نظرة عامة',
     accounts: 'الحسابات',
     transactions: 'المعاملات',
     imports: 'استيراد CSV',
     budgets: 'الميزانيات والالتزامات',
     settings: 'الإعدادات والجلسات',
-    foundationEyebrow: 'المرحلة التأسيسية ٠٠',
-    foundationTitle: 'مساحة واضحة لفهم أموالك التجريبية.',
-    foundationDescription:
-      'اكتمل أساس الواجهة: اتجاه عربي أصيل، نظام تصميم دلالي، واتصال منضبط مع واجهة RASID البرمجية الحالية.',
-    stageLabel: 'الأساس',
-    readyLabel: 'جاهز للمراجعة',
-    apiLabel: 'حدود API',
-    apiDescription:
-      'عميل مركزي يحافظ على القيم المالية كنصوص ويعرض أخطاء الخادم كما هي.',
-    authLabel: 'بنية الجلسة',
-    authDescription:
-      'رمز وصول في الذاكرة وتحديث منسّق بين علامات التبويب، دون شاشات دخول بعد.',
-    interfaceLabel: 'نظام الواجهة',
-    interfaceDescription:
-      'تخطيط متجاوب، تنقل واضح، وأنماط عربية مستضافة ذاتيًا.',
-    nextTitle: 'ما التالي؟',
-    nextDescription:
-      'تتوقف هذه المرحلة هنا. تبدأ شاشات المصادقة فقط بعد مراجعة هذا الأساس.',
-    reviewerNote: 'لا تعرض هذه الصفحة أرصدة أو معاملات مختلقة.',
-    authenticationStage: 'المصادقة',
-    sessionStatus: 'حالة الجلسة',
+    privacy: 'سياسة الخصوصية',
+    terms: 'الشروط والأحكام',
+    legalNavigation: 'روابط قانونية',
     authEyebrow: 'دخول آمن إلى العرض التجريبي',
     authWelcomeTitle: 'وضوح يبدأ من جلسة موثوقة.',
     authWelcomeDescription:
@@ -188,20 +147,10 @@ export const messages: Record<Locale, Messages> = {
     unavailableSessionDescription:
       'لم نتمكن من الوصول إلى واجهة RASID. هذه ليست حالة تسجيل خروج مؤكدة.',
     retryConnection: 'إعادة المحاولة',
-    sessionReadyEyebrow: 'المرحلة ٠١ — المصادقة',
-    sessionReadyTitle: 'جلستك جاهزة.',
-    sessionReadyDescription:
-      'اكتمل تسجيل الدخول واستعادة الجلسة والحماية. تتوقف هذه المرحلة هنا قبل بناء النظرة العامة.',
-    signedInAs: 'مسجّل باسم',
-    sessionIdentifier: 'معرّف الجلسة',
-    sessionSecurityTitle: 'ما الذي تحفظه الواجهة؟',
-    sessionSecurityDescription:
-      'رمز الوصول موجود في الذاكرة فقط، ورمز التحديث لا يمر عبر JavaScript. لا تُحفظ الرموز في التخزين المحلي أو تخزين الجلسة.',
     logoutAction: 'تسجيل الخروج',
     loggingOut: 'جارٍ تسجيل الخروج…',
     logoutFailed:
       'تعذر تأكيد تسجيل الخروج لدى الخادم. مُسحت الجلسة المحلية لحمايتك، وقد تعود الجلسة عند استعادة الاتصال.',
-    dashboardPending: 'النظرة العامة تنتظر موافقتك على هذه المرحلة.',
   },
   en: {
     productSubtitle: 'Financial clarity from demo data',
@@ -212,34 +161,15 @@ export const messages: Record<Locale, Messages> = {
     openNavigation: 'Open navigation menu',
     closeNavigation: 'Close navigation menu',
     currentSection: 'Current section',
-    planned: 'Planned',
     overview: 'Overview',
     accounts: 'Accounts',
     transactions: 'Transactions',
     imports: 'CSV imports',
     budgets: 'Budgets & obligations',
     settings: 'Settings & sessions',
-    foundationEyebrow: 'FOUNDATION STAGE 00',
-    foundationTitle: 'A calm place to understand demo finances.',
-    foundationDescription:
-      'The interface foundation is ready: native RTL, semantic design tokens, and a disciplined connection to the existing RASID API.',
-    stageLabel: 'Foundation',
-    readyLabel: 'Ready for review',
-    apiLabel: 'API boundary',
-    apiDescription:
-      'A central client preserves money as strings and presents server failures honestly.',
-    authLabel: 'Session architecture',
-    authDescription:
-      'In-memory access tokens and cross-tab refresh coordination, with no sign-in screens yet.',
-    interfaceLabel: 'Interface system',
-    interfaceDescription:
-      'Responsive structure, clear navigation, and self-hosted Arabic type.',
-    nextTitle: 'What comes next?',
-    nextDescription:
-      'This stage stops here. Authentication screens begin only after this foundation is reviewed.',
-    reviewerNote: 'This page shows no fabricated balances or transactions.',
-    authenticationStage: 'Authentication',
-    sessionStatus: 'Session status',
+    privacy: 'Privacy Policy',
+    terms: 'Terms & Conditions',
+    legalNavigation: 'Legal links',
     authEyebrow: 'Secure entry to the demo',
     authWelcomeTitle: 'Clarity starts with a trusted session.',
     authWelcomeDescription:
@@ -296,20 +226,9 @@ export const messages: Record<Locale, Messages> = {
     unavailableSessionDescription:
       'The RASID API could not be reached. This is not a confirmed sign-out.',
     retryConnection: 'Try again',
-    sessionReadyEyebrow: 'STAGE 01 — AUTHENTICATION',
-    sessionReadyTitle: 'Your session is ready.',
-    sessionReadyDescription:
-      'Sign-in, restoration, and route protection are complete. This stage stops before the Overview is built.',
-    signedInAs: 'Signed in as',
-    sessionIdentifier: 'Session ID',
-    sessionSecurityTitle: 'What does the interface keep?',
-    sessionSecurityDescription:
-      'The access token exists only in memory, and the refresh token never passes through JavaScript. No token is written to local or session storage.',
     logoutAction: 'Sign out',
     loggingOut: 'Signing out…',
     logoutFailed:
       'Server-side sign-out could not be confirmed. The local session was cleared for your safety, but it may return when the connection is restored.',
-    dashboardPending:
-      'The Overview is waiting for your approval of this stage.',
   },
 };

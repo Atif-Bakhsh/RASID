@@ -1,7 +1,7 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { ApiClientError } from '@/lib/api/errors';
 import type { Locale } from '@/lib/api/contracts';
 import { useLocale } from '@/providers/locale-provider';
@@ -19,6 +19,11 @@ export function LedgerDialog({
   children: ReactNode;
 }) {
   const dialogRef = useRef<HTMLElement>(null);
+  const onCloseRef = useRef(onClose);
+  const titleId = useId();
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null;
     const focusableSelector =
@@ -31,7 +36,7 @@ export function LedgerDialog({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (event.key !== 'Tab' || !dialogRef.current) return;
@@ -56,7 +61,7 @@ export function LedgerDialog({
         if (previouslyFocused?.isConnected) previouslyFocused.focus();
       }, 0);
     };
-  }, [onClose]);
+  }, []);
   return (
     <div
       className="ledger-dialog-backdrop"
@@ -69,10 +74,10 @@ export function LedgerDialog({
         className="ledger-dialog"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="ledger-dialog-title"
+        aria-labelledby={titleId}
       >
         <header>
-          <h2 id="ledger-dialog-title">{title}</h2>
+          <h2 id={titleId}>{title}</h2>
           <button
             type="button"
             className="icon-button"

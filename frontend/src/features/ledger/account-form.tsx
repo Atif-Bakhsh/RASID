@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useId, useState, type FormEvent } from 'react';
 import type { Currency } from '@/lib/api/contracts';
 import { useLocale } from '@/providers/locale-provider';
 import { accountPatch, OFFSET_TIMESTAMP, SIGNED_MONEY } from './helpers';
@@ -19,6 +19,7 @@ export function AccountForm({
 }) {
   const { locale } = useLocale();
   const t = ledgerMessages[locale];
+  const fieldId = useId();
   const [name, setName] = useState(account?.name ?? '');
   const [type, setType] = useState<AccountType>(account?.type ?? 'CURRENT');
   const [currency, setCurrency] = useState<Currency>(
@@ -77,13 +78,19 @@ export function AccountForm({
         <label>
           <span>{t.accountName}</span>
           <input
+            aria-label={t.accountName}
             name="name"
             value={name}
             maxLength={80}
             onChange={(event) => setName(event.target.value)}
             aria-invalid={!!errors.name}
+            aria-describedby={errors.name ? `${fieldId}-name-error` : undefined}
           />
-          {errors.name && <small className="field-error">{errors.name}</small>}
+          {errors.name && (
+            <small id={`${fieldId}-name-error`} className="field-error">
+              {errors.name}
+            </small>
+          )}
         </label>
         <label>
           <span>{t.accountType}</span>
@@ -115,30 +122,46 @@ export function AccountForm({
         <label>
           <span>{t.balance}</span>
           <input
+            aria-label={t.balance}
             name="balance"
             dir="ltr"
             inputMode="decimal"
             value={balance}
             onChange={(event) => setBalance(event.target.value)}
             aria-invalid={!!errors.balance}
+            aria-describedby={
+              errors.balance ? `${fieldId}-balance-error` : undefined
+            }
           />
           {errors.balance && (
-            <small className="field-error">{errors.balance}</small>
+            <small id={`${fieldId}-balance-error`} className="field-error">
+              {errors.balance}
+            </small>
           )}
         </label>
         <label className="ledger-form-wide">
           <span>{t.balanceAsOf}</span>
           <input
+            aria-label={t.balanceAsOf}
             name="balanceAsOf"
             dir="ltr"
             value={balanceAsOf}
             onChange={(event) => setBalanceAsOf(event.target.value)}
-            aria-describedby="balance-as-of-hint"
+            aria-describedby={
+              errors.balanceAsOf
+                ? `balance-as-of-hint ${fieldId}-balance-as-of-error`
+                : 'balance-as-of-hint'
+            }
             aria-invalid={!!errors.balanceAsOf}
           />
           <small id="balance-as-of-hint">{t.timestampHint}</small>
           {errors.balanceAsOf && (
-            <small className="field-error">{errors.balanceAsOf}</small>
+            <small
+              id={`${fieldId}-balance-as-of-error`}
+              className="field-error"
+            >
+              {errors.balanceAsOf}
+            </small>
           )}
         </label>
       </div>

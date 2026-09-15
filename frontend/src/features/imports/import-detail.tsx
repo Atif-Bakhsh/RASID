@@ -59,14 +59,18 @@ export function ImportDetailView({
           <div>
             <dt>{t.createdAt}</dt>
             <dd>
-              <time dir="ltr">{detail.createdAt}</time>
+              <time dateTime={detail.createdAt} dir="ltr">
+                {detail.createdAt}
+              </time>
             </dd>
           </div>
           {detail.committedAt && (
             <div>
               <dt>{t.committedAt}</dt>
               <dd>
-                <time dir="ltr">{detail.committedAt}</time>
+                <time dateTime={detail.committedAt} dir="ltr">
+                  {detail.committedAt}
+                </time>
               </dd>
             </div>
           )}
@@ -163,7 +167,9 @@ export function ImportDetailView({
                   {row.record ? (
                     <>
                       <td>
-                        <time dir="ltr">{row.record.postedAt}</time>
+                        <time dateTime={row.record.postedAt} dir="ltr">
+                          {row.record.postedAt}
+                        </time>
                       </td>
                       <td>{row.record.merchant}</td>
                       <td>

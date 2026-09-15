@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 
 import { BrandMark } from '@/components/app-shell/brand-mark';
 import { LanguageToggle } from '@/components/app-shell/language-toggle';
+import { LegalLinks } from '@/components/app-shell/legal-links';
 import { useLocale } from '@/providers/locale-provider';
 
 export function AuthShell({ children }: { children: ReactNode }) {
@@ -54,7 +55,10 @@ export function AuthShell({ children }: { children: ReactNode }) {
           <BrandMark />
           <LanguageToggle />
         </div>
-        <div className="auth-workspace-inner">{children}</div>
+        <div className="auth-workspace-inner">
+          {children}
+          <LegalLinks />
+        </div>
       </section>
     </main>
   );

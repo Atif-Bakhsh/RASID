@@ -1,5 +1,10 @@
 const API_PATH_SUFFIX = '/api/v1';
 
+export interface DemoCredentials {
+  email: string;
+  password: string;
+}
+
 export function getApiBaseUrl(): string {
   const value = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
 
@@ -37,4 +42,26 @@ export function getApiBaseUrl(): string {
 
   url.pathname = normalizedPath;
   return url.toString().replace(/\/$/, '');
+}
+
+export function getDemoCredentials(): DemoCredentials | null {
+  const email = process.env.NEXT_PUBLIC_DEMO_EMAIL?.trim();
+  const password = process.env.NEXT_PUBLIC_DEMO_PASSWORD;
+
+  if (!email && !password) return null;
+  if (!email || !password) {
+    throw new Error(
+      'NEXT_PUBLIC_DEMO_EMAIL and NEXT_PUBLIC_DEMO_PASSWORD must be set together.',
+    );
+  }
+  if (!/^\S+@\S+\.\S+$/.test(email) || email.length > 254) {
+    throw new Error('NEXT_PUBLIC_DEMO_EMAIL must be a valid email address.');
+  }
+  if (password.length < 12 || password.length > 128) {
+    throw new Error(
+      'NEXT_PUBLIC_DEMO_PASSWORD must be between 12 and 128 characters.',
+    );
+  }
+
+  return { email, password };
 }

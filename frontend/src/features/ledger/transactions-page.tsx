@@ -255,6 +255,9 @@ export function TransactionsPage() {
               value={filters.from}
               onChange={(event) => setFilter('from', event.target.value)}
               aria-invalid={invalidRange}
+              aria-describedby={
+                invalidRange ? 'transaction-date-range-error' : undefined
+              }
             />
           </label>
           <label>
@@ -267,6 +270,9 @@ export function TransactionsPage() {
               value={filters.to}
               onChange={(event) => setFilter('to', event.target.value)}
               aria-invalid={invalidRange}
+              aria-describedby={
+                invalidRange ? 'transaction-date-range-error' : undefined
+              }
             />
           </label>
           <label className="search-filter">
@@ -311,7 +317,11 @@ export function TransactionsPage() {
           </label>
         </div>
         {invalidRange && (
-          <p className="field-error" role="alert">
+          <p
+            id="transaction-date-range-error"
+            className="field-error"
+            role="alert"
+          >
             {t.invalidRange}
           </p>
         )}
@@ -369,7 +379,9 @@ export function TransactionsPage() {
                     return (
                       <tr key={record.id}>
                         <td>
-                          <time dir="ltr">{record.postedAt}</time>
+                          <time dateTime={record.postedAt} dir="ltr">
+                            {record.postedAt}
+                          </time>
                         </td>
                         <th scope="row">
                           <strong>{record.merchant}</strong>

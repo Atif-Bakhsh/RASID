@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import type { Messages } from '@/lib/i18n/messages';
 import { useLocale } from '@/providers/locale-provider';
@@ -22,6 +22,7 @@ import { useAuth } from '@/providers/auth-provider';
 
 import { BrandMark } from './brand-mark';
 import { LanguageToggle } from './language-toggle';
+import { LegalLinks } from './legal-links';
 import { PageContainer } from './page-container';
 
 interface NavigationItem {
@@ -35,7 +36,8 @@ interface NavigationItem {
     | 'budgets'
     | 'settings'
   >;
-  href?: '/' | '/accounts' | '/transactions' | '/imports';
+  href:
+    '/' | '/accounts' | '/transactions' | '/imports' | '/budgets' | '/settings';
 }
 
 const navigationItems: NavigationItem[] = [
@@ -43,8 +45,8 @@ const navigationItems: NavigationItem[] = [
   { icon: CircleDollarSign, label: 'accounts', href: '/accounts' },
   { icon: ReceiptText, label: 'transactions', href: '/transactions' },
   { icon: FileUp, label: 'imports', href: '/imports' },
-  { icon: ChartNoAxesCombined, label: 'budgets' },
-  { icon: Settings2, label: 'settings' },
+  { icon: ChartNoAxesCombined, label: 'budgets', href: '/budgets' },
+  { icon: Settings2, label: 'settings', href: '/settings' },
 ];
 
 function Navigation({ onNavigate }: { onNavigate?: () => void }) {
@@ -56,24 +58,16 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
       <ul>
         {navigationItems.map(({ href, icon: Icon, label }) => (
           <li key={label}>
-            {href ? (
-              <Link
-                className={`navigation-link${pathname === href ? ' navigation-link--current' : ''}`}
-                href={href}
-                aria-current={pathname === href ? 'page' : undefined}
-                onClick={onNavigate}
-              >
-                <Icon size={19} strokeWidth={1.8} aria-hidden="true" />
-                <span>{messages[label]}</span>
-                <span className="navigation-current-dot" aria-hidden="true" />
-              </Link>
-            ) : (
-              <span className="navigation-link" aria-disabled="true">
-                <Icon size={19} strokeWidth={1.7} aria-hidden="true" />
-                <span>{messages[label]}</span>
-                <span className="navigation-planned">{messages.planned}</span>
-              </span>
-            )}
+            <Link
+              className={`navigation-link${pathname === href ? ' navigation-link--current' : ''}`}
+              href={href}
+              aria-current={pathname === href ? 'page' : undefined}
+              onClick={onNavigate}
+            >
+              <Icon size={19} strokeWidth={1.8} aria-hidden="true" />
+              <span>{messages[label]}</span>
+              <span className="navigation-current-dot" aria-hidden="true" />
+            </Link>
           </li>
         ))}
       </ul>
@@ -86,6 +80,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { signOut } = useAuth();
   const [loggingOut, setLoggingOut] = useState(false);
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileNavigationRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const currentLabel =
     pathname === '/accounts'
@@ -94,7 +90,23 @@ export function AppShell({ children }: { children: ReactNode }) {
         ? messages.transactions
         : pathname === '/imports'
           ? messages.imports
-          : messages.overview;
+          : pathname === '/budgets'
+            ? messages.budgets
+            : pathname === '/settings'
+              ? messages.settings
+              : messages.overview;
+
+  useEffect(() => {
+    if (!mobileNavigationOpen) return;
+    mobileNavigationRef.current?.querySelector<HTMLAnchorElement>('a')?.focus();
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setMobileNavigationOpen(false);
+      mobileMenuButtonRef.current?.focus();
+    };
+    document.addEventListener('keydown', closeOnEscape);
+    return () => document.removeEventListener('keydown', closeOnEscape);
+  }, [mobileNavigationOpen]);
 
   async function handleLogout() {
     if (loggingOut) return;
@@ -119,6 +131,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="mobile-header-actions">
           <LanguageToggle inverse />
           <button
+            ref={mobileMenuButtonRef}
             className="mobile-menu-button"
             type="button"
             aria-label={
@@ -140,9 +153,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       <div
+        ref={mobileNavigationRef}
         className={`mobile-navigation-panel${mobileNavigationOpen ? ' is-open' : ''}`}
         id="mobile-navigation"
         aria-hidden={!mobileNavigationOpen}
+        inert={!mobileNavigationOpen ? true : undefined}
       >
         <Navigation onNavigate={() => setMobileNavigationOpen(false)} />
       </div>
@@ -173,6 +188,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <PageContainer>
             {children}
             <footer className="app-session-footer">
+              <LegalLinks />
               <button
                 className="button button--secondary"
                 type="button"

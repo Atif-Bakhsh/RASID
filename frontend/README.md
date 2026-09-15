@@ -12,6 +12,12 @@ pnpm dev
 
 The frontend runs on [http://localhost:5173](http://localhost:5173). The example configuration connects to the local API at `http://localhost:3000/api/v1`; that exact frontend origin must be allowed by the backend CORS configuration.
 
+`NEXT_PUBLIC_API_BASE_URL` is required at build time. The optional
+`NEXT_PUBLIC_DEMO_EMAIL` and `NEXT_PUBLIC_DEMO_PASSWORD` pair controls the
+synthetic demo-account helper on the login screen. Both values are intentionally
+browser-visible; omit both from a production build when a shared demo account is
+not intended.
+
 ## Commands
 
 ```sh
@@ -28,7 +34,7 @@ pnpm check
 - `src/components`: reusable UI and the responsive application shell.
 - `src/config`: validated public runtime/build configuration.
 - `src/features`: product capability boundaries; authentication, Overview, accounts,
-  transactions, and CSV imports.
+  transactions, CSV imports, budgets, obligations, categories, and sessions.
 - `src/lib`: API transport, shared contracts, and localization dictionaries.
 - `src/providers`: locale, query-cache, and authentication composition.
 
@@ -80,8 +86,25 @@ leaves the multipart boundary unset. Commit results remain separate from preview
 counts. If a commit response is lost, the client checks the same import ID and,
 only while it remains `PREVIEW`, retries that same commit once. Successful commits
 invalidate transaction, analytics, budget and insight queries. No CSV parsing or
-duplicate detection is recreated in the browser. Budgets, obligations, category
-management and sessions remain intentionally unimplemented pending review.
+duplicate detection is recreated in the browser.
+
+Stage 5 adds `/budgets` for month/currency-scoped budgets and paginated recurring
+obligation estimates, plus `/settings` for shared/private categories and session
+revocation. Budget usage, spending, remaining values, and utilization come directly
+from the API; only the visual bar is capped at 100%. Budget category scope remains
+exact, and obligations are never presented as recorded payments. Category and
+session controls follow backend ownership and session-ID semantics without inferred
+device or location data. Mutations invalidate only their documented dependent query
+families, while revoking the current session clears authentication and user cache.
+
+Stage 6 audits the complete interface for visual consistency, keyboard behavior,
+RTL/LTR readability, responsive adaptations, and accessible dialog/navigation
+behavior. Stage 7 adds focused management contract tests and an actual-API smoke
+script while retaining server-authoritative financial values. Stage 8 adds public
+`/privacy` and `/terms` routes, bilingual metadata, favicon/crawler decisions, and
+production deployment documentation. Authenticated and authentication routes are
+explicitly marked `noindex`; a sitemap is intentionally deferred until a canonical
+public domain exists.
 
 ## Overview verification
 
@@ -131,3 +154,18 @@ TEST_DATABASE_URL=postgresql://rasid:rasid-local-demo-only@localhost:55432/postg
 
 See [Stage 4 verification](docs/IMPORTS_VERIFICATION.md) for the covered success,
 failure and timeout-recovery paths and the remaining browser-level checks.
+
+## Management verification
+
+See [Stage 5 verification](docs/MANAGEMENT_VERIFICATION.md) for the implemented
+contracts, interaction coverage, and current integration evidence.
+
+With the local seeded backend running, management integration can be checked with:
+
+```sh
+pnpm smoke:management
+```
+
+See [design audit](docs/DESIGN_AUDIT.md), [quality verification](docs/QUALITY_VERIFICATION.md),
+and [launch preparation](docs/LAUNCH_PREPARATION.md) for the later-stage evidence and
+remaining external checks.
