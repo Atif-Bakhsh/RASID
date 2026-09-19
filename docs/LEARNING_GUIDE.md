@@ -101,7 +101,13 @@ In `budgets.service.ts`, spending is restricted to the budget's exact category, 
 
 Exercise: change the near-budget threshold from 80% to 85%. Update the rule's facts/explanation, version if you intend a public behavioral change, and boundary tests at 84.99%, 85%, and above 100%. The rule remains deterministic and does not need AI.
 
-## Lesson 7: operate a failure
+## Lesson 7: constrain an AI integration
+
+Trace `POST /api/v1/insights/explain` through the DTO, authenticated controller, snapshot service, fact catalogue, OpenAI client and output validator. Explain why the API key stays server-side, why `store: false` is explicit, why the model sees aggregates instead of transaction rows, and why returned evidence values are rebuilt from trusted facts. Then show that an unknown evidence ID or invented number becomes `503 AI_UNAVAILABLE` while the regular Overview still works.
+
+Exercise: add one new aggregate fact. Update its bilingual labels, unit, tests and OpenAPI contract. Do not add raw merchants or account names. Be able to explain why a vector database, agent framework, fine-tuning and web search would add complexity without helping this bounded monthly explanation.
+
+## Lesson 8: operate a failure
 
 Use the operations runbook to inspect live/readiness endpoints, request logs and migration status. Run the query-plan experiment and explain the composite index order. Back up the synthetic database, restore into a separate empty database and reconcile the same sums. A successful `pg_dump` alone does not prove recovery.
 

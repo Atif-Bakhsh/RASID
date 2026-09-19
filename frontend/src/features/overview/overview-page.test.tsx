@@ -13,7 +13,12 @@ import { ApiClientError, ApiNetworkError } from '@/lib/api/errors';
 import { LocaleProvider } from '@/providers/locale-provider';
 import { OverviewPage } from './overview-page';
 import { formatMoney, monthStatus } from './format';
-import type { Budgets, Insights, MonthlyAnalytics } from './types';
+import type {
+  AiInsightExplanation,
+  Budgets,
+  Insights,
+  MonthlyAnalytics,
+} from './types';
 
 const mocks = vi.hoisted(() => ({ request: vi.fn(), userId: 'user-one' }));
 vi.mock('@/lib/api/client', () => ({ protectedApiRequest: mocks.request }));
@@ -107,10 +112,33 @@ const insights: Insights = {
     },
   ],
 };
+const aiExplanation: AiInsightExplanation = {
+  month: '2026-09',
+  currency: 'SAR',
+  locale: 'ar',
+  status: 'ANSWERED',
+  answer: 'الإنفاق المسجل هو 4653.00 SAR لهذه الفترة التجريبية.',
+  evidence: [
+    {
+      id: 'monthly.spending',
+      labelAr: 'الإنفاق المسجل',
+      labelEn: 'Recorded spending',
+      value: '4653.00',
+      unit: 'SAR',
+    },
+  ],
+  model: 'gpt-5.6-luna',
+  promptVersion: 'monthly-analyst-v1',
+  dataMode: 'DEMO_ONLY',
+  disclaimerAr: 'شرح مولّد لبيانات تجريبية، وليس نصيحة مالية.',
+  disclaimerEn: 'AI-generated explanation of demo data; not financial advice.',
+};
 
 function respond(path: string) {
   if (path.startsWith('/analytics/')) return Promise.resolve(monthly);
   if (path.startsWith('/budgets')) return Promise.resolve(budgets);
+  if (path.startsWith('/insights/explain'))
+    return Promise.resolve(aiExplanation);
   if (path.startsWith('/insights')) return Promise.resolve(insights);
   throw new Error(`Unexpected request: ${path}`);
 }
@@ -408,6 +436,79 @@ describe('Overview', () => {
     await user.selectOptions(screen.getByLabelText('العملة'), 'SAR');
     expect(await screen.findByText('12,300.00')).toBeVisible();
     expect(mocks.request).toHaveBeenCalledTimes(6);
+  });
+
+  it('generates an on-demand briefing and renders only server evidence values', async () => {
+    const { user } = setup();
+    await screen.findByText('12,300.00');
+    expect(mocks.request).toHaveBeenCalledTimes(3);
+    await user.click(screen.getByRole('button', { name: 'إنشاء ملخص الشهر' }));
+    expect(await screen.findByText(aiExplanation.answer)).toBeVisible();
+    expect(screen.getByText('سجل الأدلة')).toBeVisible();
+    expect(screen.getAllByText('4,653.00')).toHaveLength(2);
+    expect(mocks.request).toHaveBeenLastCalledWith('/insights/explain', {
+      method: 'POST',
+      body: { month: '2026-09', currency: 'SAR', locale: 'ar' },
+    });
+  });
+
+  it('sends one bounded question and labels an out-of-scope answer', async () => {
+    mocks.request.mockImplementation((path: string) =>
+      path.startsWith('/insights/explain')
+        ? Promise.resolve({
+            ...aiExplanation,
+            status: 'OUT_OF_SCOPE',
+            answer: 'يمكنني شرح بيانات الفترة المعروضة فقط.',
+            evidence: [],
+          })
+        : respond(path),
+    );
+    const { user } = setup();
+    await screen.findByText('12,300.00');
+    await user.type(
+      screen.getByLabelText('سؤال اختياري عن هذه الفترة'),
+      'هل سيرتفع السوق؟',
+    );
+    await user.click(screen.getByRole('button', { name: 'شرح السؤال' }));
+    expect(await screen.findByText('خارج نطاق بيانات الفترة')).toBeVisible();
+    expect(mocks.request).toHaveBeenLastCalledWith('/insights/explain', {
+      method: 'POST',
+      body: {
+        month: '2026-09',
+        currency: 'SAR',
+        locale: 'ar',
+        question: 'هل سيرتفع السوق؟',
+      },
+    });
+  });
+
+  it('keeps the deterministic overview usable when AI is disabled', async () => {
+    mocks.request.mockImplementation((path: string) =>
+      path.startsWith('/insights/explain')
+        ? Promise.reject(
+            new ApiClientError(
+              {
+                error: {
+                  code: 'AI_UNAVAILABLE',
+                  message: 'The optional AI explanation is unavailable.',
+                  messageAr: 'الشرح الاختياري بالذكاء الاصطناعي غير متاح.',
+                },
+                requestId: 'ai-request',
+                timestamp: '2026-09-19T00:00:00Z',
+              },
+              503,
+            ),
+          )
+        : respond(path),
+    );
+    const { user } = setup();
+    await screen.findByText('12,300.00');
+    await user.click(screen.getByRole('button', { name: 'إنشاء ملخص الشهر' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'الشرح الاختياري بالذكاء الاصطناعي غير متاح.',
+    );
+    expect(screen.getByText('12,300.00')).toBeVisible();
+    expect(screen.getByText('تجاوز الميزانية')).toBeVisible();
   });
 });
 

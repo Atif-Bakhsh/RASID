@@ -5313,6 +5313,142 @@
           "Insights"
         ]
       }
+    },
+    "/api/v1/insights/explain": {
+      "post": {
+        "operationId": "InsightsController_explain",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExplainInsightsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response. All records are demo data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiInsightExplanation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Consistent error envelope; see error.code and requestId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Consistent error envelope; see error.code and requestId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Consistent error envelope; see error.code and requestId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Consistent error envelope; see error.code and requestId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Consistent error envelope; see error.code and requestId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Consistent error envelope; see error.code and requestId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Consistent error envelope; see error.code and requestId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Consistent error envelope; see error.code and requestId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Consistent error envelope; see error.code and requestId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Consistent error envelope; see error.code and requestId.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Insights"
+        ]
+      }
     }
   },
   "info": {
@@ -5709,6 +5845,39 @@
             "type": "boolean"
           }
         }
+      },
+      "ExplainInsightsDto": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string",
+            "example": "2026-09"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "SAR",
+              "USD",
+              "EUR"
+            ],
+            "default": "SAR"
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "ar",
+              "en"
+            ]
+          },
+          "question": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "currency",
+          "locale"
+        ]
       },
       "ApiError": {
         "type": "object",
@@ -6762,6 +6931,119 @@
           "disclaimerAr",
           "disclaimerEn",
           "data"
+        ]
+      },
+      "AiInsightExplanation": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string",
+            "pattern": "^20\\d{2}-(0[1-9]|1[0-2])$",
+            "example": "2026-09"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "SAR",
+              "USD",
+              "EUR"
+            ]
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "ar",
+              "en"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ANSWERED",
+              "INSUFFICIENT_DATA",
+              "OUT_OF_SCOPE"
+            ]
+          },
+          "answer": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "labelAr": {
+                  "type": "string"
+                },
+                "labelEn": {
+                  "type": "string"
+                },
+                "value": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                },
+                "unit": {
+                  "type": "string",
+                  "enum": [
+                    "SAR",
+                    "USD",
+                    "EUR",
+                    "PERCENT",
+                    "COUNT",
+                    "MONTH",
+                    "RULE"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "labelAr",
+                "labelEn",
+                "value",
+                "unit"
+              ]
+            }
+          },
+          "model": {
+            "type": "string"
+          },
+          "promptVersion": {
+            "type": "string"
+          },
+          "dataMode": {
+            "type": "string",
+            "enum": [
+              "DEMO_ONLY"
+            ]
+          },
+          "disclaimerAr": {
+            "type": "string"
+          },
+          "disclaimerEn": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "month",
+          "currency",
+          "locale",
+          "status",
+          "answer",
+          "evidence",
+          "model",
+          "promptVersion",
+          "dataMode",
+          "disclaimerAr",
+          "disclaimerEn"
         ]
       },
       "Budgets": {

@@ -27,24 +27,24 @@ PostgreSQL is bound to `127.0.0.1:55432`. The migration service finishes before 
 
 ## What is implemented
 
-| Module | Working behavior |
-| --- | --- |
-| Auth | Register, login, rotating refresh cookie, logout, session list/revoke, immediate revocation of associated access tokens |
-| Accounts | Create/list/details/update; typed accounts, supported currencies, dated balance snapshots; nonempty account deletion is rejected |
+| Module       | Working behavior                                                                                                                                                           |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth         | Register, login, rotating refresh cookie, logout, session list/revoke, immediate revocation of associated access tokens                                                    |
+| Accounts     | Create/list/details/update; typed accounts, supported currencies, dated balance snapshots; nonempty account deletion is rejected                                           |
 | Transactions | Create/update/delete, categorization, ownership, exact amounts, duplicate fingerprints, date/category/currency/direction filters, literal search, stable offset pagination |
-| CSV imports | Bounded UTF-8 upload, strict headers, row errors, preview persistence, file/account deduplication, explicit partial acceptance, transactional and idempotent commit |
-| Categories | Shared Arabic/English defaults and private user categories; one-level hierarchy |
-| Analytics | Income, spending, net, category totals, previous-month comparison, separately labeled recurring obligation estimates |
-| Budgets | One category/month budget per user, currency-specific spending and computed remaining amount |
-| Obligations | Manual recurring monthly estimates, due day 1–28, activation/deactivation |
-| Insights | Deterministic versioned rules with bilingual explanations, source facts, and thresholds |
-| Operations | Validated configuration, structured logs, request IDs, health/readiness, migrations, Docker, CI/release image workflow, backup/restore tools |
+| CSV imports  | Bounded UTF-8 upload, strict headers, row errors, preview persistence, file/account deduplication, explicit partial acceptance, transactional and idempotent commit        |
+| Categories   | Shared Arabic/English defaults and private user categories; one-level hierarchy                                                                                            |
+| Analytics    | Income, spending, net, category totals, previous-month comparison, separately labeled recurring obligation estimates                                                       |
+| Budgets      | One category/month budget per user, currency-specific spending and computed remaining amount                                                                               |
+| Obligations  | Manual recurring monthly estimates, due day 1–28, activation/deactivation                                                                                                  |
+| Insights     | Deterministic versioned rules plus an opt-in, evidence-bound monthly AI explanation; bilingual output, source facts, and safe fallback                                     |
+| Operations   | Validated configuration, structured logs, request IDs, health/readiness, migrations, Docker, CI/release image workflow, backup/restore tools                               |
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    Client[API explorer / future Arabic web UI] --> HTTP[Request ID + body limits + origin checks]
+    Client[Next.js Arabic web UI / API explorer] --> HTTP[Request ID + body limits + origin checks]
     HTTP --> Guards[Rate limit + JWT + active session]
     Guards --> DTO[DTO validation]
     DTO --> Controllers[Thin feature controllers]
@@ -53,9 +53,10 @@ flowchart LR
     ORM --> PG[(PostgreSQL)]
     PG --> Facts[Exact aggregates]
     Facts --> Insights[Deterministic insight rules]
+    Facts --> Analyst[Optional evidence-bound AI explanation]
 ```
 
-One deployment, one relational database, no message broker or caching service. Read the [architecture and tradeoffs](docs/ARCHITECTURE.md) and [decision ledger](docs/DECISIONS.md).
+One deployment, one relational database, no message broker or caching service. The optional AI analyst is disabled by default; it calls the OpenAI Responses API only when a user requests a briefing and never replaces RASID's calculations. Read the [architecture and tradeoffs](docs/ARCHITECTURE.md) and [decision ledger](docs/DECISIONS.md).
 
 ## Work locally
 
@@ -113,4 +114,4 @@ Only SAR/USD/EUR with two-decimal amounts are supported. Different currencies ar
 
 CSV deduplication can consider two identical same-day purchases duplicates unless they have distinct references. A committed import remains committed even if its resulting transactions are later edited or deleted. Refresh rotation intentionally treats simultaneous reuse as suspicious; the frontend must serialize refresh requests across tabs. The process-local rate limiter resets on restart and assumes one API instance.
 
-There is no password reset/email delivery, email verification, MFA, automatic data-retention scheduler, or AI advisor. Demo labels do not automatically sanitize user uploads: only synthetic or already sanitized records belong in this project. Never upload real account statements to a public portfolio demo.
+There is no password reset/email delivery, email verification, MFA, automatic data-retention scheduler, general AI chatbot, prediction, or financial-advice feature. The optional monthly analyst explains only allow-listed aggregate demo facts and is unavailable unless explicitly configured. Demo labels do not automatically sanitize user uploads: only synthetic or already sanitized records belong in this project. Never upload real account statements to a public portfolio demo.

@@ -14,6 +14,10 @@ export interface Environment {
   TRUST_PROXY_HOPS: number;
   COOKIE_SECURE: boolean;
   LOG_LEVEL: 'log' | 'warn' | 'error';
+  AI_ENABLED: boolean;
+  OPENAI_API_KEY: string;
+  OPENAI_MODEL: 'gpt-5.6-luna' | 'gpt-5.6-terra';
+  AI_TIMEOUT_MS: number;
 }
 
 export function validateEnvironment(raw: Record<string, unknown>): Environment {
@@ -88,6 +92,13 @@ export function validateEnvironment(raw: Record<string, unknown>): Environment {
   const logLevel = string('LOG_LEVEL', 'log');
   if (!['log', 'warn', 'error'].includes(logLevel))
     throw new Error('LOG_LEVEL must be log, warn, or error');
+  const aiEnabled = boolean('AI_ENABLED', false);
+  const openAiApiKey = string('OPENAI_API_KEY');
+  if (aiEnabled && !openAiApiKey)
+    throw new Error('OPENAI_API_KEY is required when AI_ENABLED=true');
+  const openAiModel = string('OPENAI_MODEL', 'gpt-5.6-luna');
+  if (!['gpt-5.6-luna', 'gpt-5.6-terra'].includes(openAiModel))
+    throw new Error('OPENAI_MODEL must be gpt-5.6-luna or gpt-5.6-terra');
   return {
     NODE_ENV: nodeEnv as Environment['NODE_ENV'],
     PORT: integer('PORT', 3000, 1, 65535),
@@ -105,5 +116,9 @@ export function validateEnvironment(raw: Record<string, unknown>): Environment {
     TRUST_PROXY_HOPS: integer('TRUST_PROXY_HOPS', 0, 0, 3),
     COOKIE_SECURE: cookieSecure,
     LOG_LEVEL: logLevel as Environment['LOG_LEVEL'],
+    AI_ENABLED: aiEnabled,
+    OPENAI_API_KEY: openAiApiKey,
+    OPENAI_MODEL: openAiModel as Environment['OPENAI_MODEL'],
+    AI_TIMEOUT_MS: integer('AI_TIMEOUT_MS', 10000, 1000, 30000),
   };
 }

@@ -75,3 +75,21 @@ export interface Insights extends MonthScope {
     facts: Record<string, string | number>;
   }[];
 }
+
+export interface AiInsightExplanation extends MonthScope {
+  locale: 'ar' | 'en';
+  status: 'ANSWERED' | 'INSUFFICIENT_DATA' | 'OUT_OF_SCOPE';
+  answer: string;
+  evidence: {
+    id: string;
+    labelAr: string;
+    labelEn: string;
+    value: string | number;
+    unit: Currency | 'PERCENT' | 'COUNT' | 'MONTH' | 'RULE';
+  }[];
+  model: string;
+  promptVersion: string;
+  dataMode: 'DEMO_ONLY';
+  disclaimerAr: string;
+  disclaimerEn: string;
+}

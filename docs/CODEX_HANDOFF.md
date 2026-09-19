@@ -17,7 +17,7 @@ Feature modules live in `src/modules/`:
 - `auth`: registration/login, refresh rotation, logout, profile, session listing/revocation, ownership enforcement.
 - `accounts`, `transactions`, `categories`: manual account snapshots; transaction CRUD, categorization, filters/search/pagination; shared bilingual and private categories.
 - `imports`: bounded CSV preview, row errors, duplicate detection, persisted previews, transactional/idempotent commit.
-- `analytics`, `budgets`, `obligations`, `insights`: exact monthly facts/comparisons, category budgets, recurring estimates, deterministic bilingual explanations.
+- `analytics`, `budgets`, `obligations`, `insights`: exact monthly facts/comparisons, category budgets, recurring estimates, deterministic bilingual explanations, and an opt-in evidence-bound monthly AI analyst.
 
 Also implemented: strict configuration/DTO validation, consistent errors, request IDs, structured logs, health/readiness, migrations, synthetic fixtures/seed, Swagger/OpenAPI, Docker/Compose, CI/release workflows, and backup/restore scripts. See [README](../README.md) for setup and [LEARNING_GUIDE.md](LEARNING_GUIDE.md) for walkthroughs/exercises.
 
@@ -25,7 +25,7 @@ Also implemented: strict configuration/DTO validation, consistent errors, reques
 
 NestJS 11/TypeScript + TypeORM 0.3 + PostgreSQL 17; one modular-monolith API at `/api/v1`. Controllers stay thin; services own business rules and ownership-scoped persistence. Foreign resources return the same 404 as missing resources. Do not recreate these rules in Next.js API routes or a second database.
 
-Hand-authored SQL migrations own physical constraints/indexes; automatic schema synchronization and startup migrations are disabled. Compose runs a separate migration step before the API. Monthly analytics and insight facts use repeatable-read snapshots. No microservices, Redis, queues, object storage, bank integrations, payments, live markets, or AI dependency. Details: [ARCHITECTURE.md](ARCHITECTURE.md), [DECISIONS.md](DECISIONS.md).
+Hand-authored SQL migrations own physical constraints/indexes; automatic schema synchronization and startup migrations are disabled. Compose runs a separate migration step before the API. Monthly analytics and insight facts use repeatable-read snapshots. No microservices, Redis, queues, object storage, bank integrations, payments, live markets, or required AI dependency. The optional analyst is disabled by default and cannot replace deterministic calculations. Details: [ARCHITECTURE.md](ARCHITECTURE.md), [DECISIONS.md](DECISIONS.md).
 
 ## Authentication contract
 
@@ -47,11 +47,12 @@ Exact payloads, pagination, limits, errors, and screen requirements remain in [F
 
 ## Recorded verification and fixes
 
-[VERIFICATION.md](VERIFICATION.md) records the backend baseline. On 2026-09-14/15,
-the current 22-test real-PostgreSQL HTTP suite passed again, as did the live demo,
-Overview, ledger, and management smoke scripts. The frontend quality report records
-68 passing interaction/contract tests before launch-page additions; the complete
-suite is rerun during launch preparation. See
+[VERIFICATION.md](VERIFICATION.md) records the backend baseline. On 2026-09-19,
+the backend check passed 54 unit tests and build, the current 22-test
+real-PostgreSQL HTTP suite passed, and the frontend check passed 80 tests plus its
+optimized build with the required API base URL supplied. The OpenAPI contract was
+regenerated for the analyst endpoint. No live OpenAI request was claimed because no
+personal API key was supplied. See
 [QUALITY_VERIFICATION.md](../frontend/docs/QUALITY_VERIFICATION.md).
 
 Recorded operational checks passed: production Docker build/startup, seeded API smoke checks, backup restored into a separate empty database with matching counts/totals, and database outage/recovery (live 200 / ready 503, then ready 200 without API restart). A 100,000-row temporary query-plan experiment demonstrated an index benefit, not a production capacity guarantee. See [OPERATIONS.md](OPERATIONS.md) and [QUERY_PLAN.md](QUERY_PLAN.md).
@@ -65,7 +66,7 @@ Implementation fixes documented and visible in code:
 
 ## Limitations and unfinished work
 
-Only SAR/USD/EUR and two-decimal money are supported. Offset pages can shift under concurrent writes. Identical same-day purchases can deduplicate without distinct references. Rate limits are process-local and assume one API instance. No password reset, email verification, MFA, automatic retention, transfer/refund ledger, or AI advisor exists. Demo labels do not sanitize uploaded files; never use real statements.
+Only SAR/USD/EUR and two-decimal money are supported. Offset pages can shift under concurrent writes. Identical same-day purchases can deduplicate without distinct references. Rate limits are process-local and assume one API instance. No password reset, email verification, MFA, automatic retention, transfer/refund ledger, general chatbot, prediction, or financial-advice feature exists. Demo labels do not sanitize uploaded files; never use real statements.
 
 No public deployment, executed remote CI run, published GHCR image, recorded demo,
 production load test, or completed personal ownership exercises is evidenced here.

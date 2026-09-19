@@ -6,22 +6,26 @@ This runbook operates a single NestJS API and PostgreSQL. Local Compose and the 
 
 Copy `.env.example` to `.env`. Startup validates configuration before listening.
 
-| Variable | Meaning |
-| --- | --- |
-| `NODE_ENV` | development, test or production |
-| `PORT` | API port, 3000 default |
-| `DATABASE_URL` | PostgreSQL connection URL including database name |
-| `DATABASE_SSL` | true uses certificate-verified TLS; false is suitable for the local Compose network |
-| `JWT_SECRET` | At least 32 characters; use random bytes for deployment |
-| `ACCESS_TOKEN_TTL_SECONDS` | 60–3600; default 900 |
-| `REFRESH_TOKEN_TTL_DAYS` | Absolute session lifetime, 1–30; default 14 |
-| `CORS_ORIGINS` | Exact comma-separated origins; HTTPS only in production; include Swagger's origin if it will issue mutations |
-| `COOKIE_SECURE` | Required true in production |
-| `TRUST_PROXY_HOPS` | 0 by default; set the exact trusted proxy count, never indiscriminately trust arbitrary forwarding headers |
-| `LOG_LEVEL` | log, warn or error |
-| `POSTGRES_*` | Compose database name, local port and credentials |
-| `DEMO_EMAIL`, `DEMO_PASSWORD`, `DEMO_MONTH` | Explicit opt-in synthetic seed configuration |
-| `ALLOW_DEMO_SEED` | Must be true to intentionally seed a production-mode demo |
+| Variable                                    | Meaning                                                                                                      |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `NODE_ENV`                                  | development, test or production                                                                              |
+| `PORT`                                      | API port, 3000 default                                                                                       |
+| `DATABASE_URL`                              | PostgreSQL connection URL including database name                                                            |
+| `DATABASE_SSL`                              | true uses certificate-verified TLS; false is suitable for the local Compose network                          |
+| `JWT_SECRET`                                | At least 32 characters; use random bytes for deployment                                                      |
+| `ACCESS_TOKEN_TTL_SECONDS`                  | 60–3600; default 900                                                                                         |
+| `REFRESH_TOKEN_TTL_DAYS`                    | Absolute session lifetime, 1–30; default 14                                                                  |
+| `CORS_ORIGINS`                              | Exact comma-separated origins; HTTPS only in production; include Swagger's origin if it will issue mutations |
+| `COOKIE_SECURE`                             | Required true in production                                                                                  |
+| `TRUST_PROXY_HOPS`                          | 0 by default; set the exact trusted proxy count, never indiscriminately trust arbitrary forwarding headers   |
+| `LOG_LEVEL`                                 | log, warn or error                                                                                           |
+| `AI_ENABLED`                                | Optional analyst feature flag; false by default                                                              |
+| `OPENAI_API_KEY`                            | Required only when `AI_ENABLED=true`; secret-manager value, never browser-visible                            |
+| `OPENAI_MODEL`                              | Allow-listed `gpt-5.6-luna` default or `gpt-5.6-terra`                                                       |
+| `AI_TIMEOUT_MS`                             | Provider timeout, 1,000–30,000 ms; default 10,000                                                            |
+| `POSTGRES_*`                                | Compose database name, local port and credentials                                                            |
+| `DEMO_EMAIL`, `DEMO_PASSWORD`, `DEMO_MONTH` | Explicit opt-in synthetic seed configuration                                                                 |
+| `ALLOW_DEMO_SEED`                           | Must be true to intentionally seed a production-mode demo                                                    |
 
 Generate a deployment secret with `node -e "console.log(require('node:crypto').randomBytes(48).toString('hex'))"`. Store it in the hosting secret manager. Use a URL-safe or correctly percent-encoded database password; Compose interpolates credentials into its internal URL. Never commit real secrets or dump files.
 
@@ -56,19 +60,21 @@ curl -i -H 'X-Request-ID: rasid-investigation-01' http://localhost:3000/api/v1/h
 
 HTTP logs are JSON with event, requestId, method, route template, status and durationMs. Bodies, Authorization headers, cookies, query strings and uploaded CSV bytes are not logged. A frontend error includes the same request ID so you can correlate it without exposing credentials. Unmatched routes are logged as `unmatched`, not arbitrary attacker-controlled URL text.
 
+AI completion logs contain only model, prompt version, status, evidence count, token counts and duration. They do not contain the question, prompt facts, answer, user ID, or API key. Treat repeated `ai_insight_failed` events as an optional-feature incident: verify the feature flag, secret, egress, provider status and timeout while confirming the normal Overview still works. Do not add automatic retries; a user can explicitly request another explanation.
+
 Liveness means the process can answer HTTP. Readiness requires a database query and the expected migration record. A failed readiness check does not necessarily mean the process died.
 
-| Evidence | Next check |
-| --- | --- |
-| Connection refused on API port | `docker compose ps`, then API startup logs |
-| Container exits with missing module | Check production dependencies; build success alone does not prove runtime boot |
-| Live is 200; ready is 503 | Database health/network, credentials, migration status |
-| Ready is 503 after a fresh database | Run the migration service; do not enable synchronize |
-| 401 with a previously valid JWT | JWT expiry, session revokedAt/expiresAt, refresh replay |
-| 403 from browser only | Exact Origin, credentials mode, X-RASID-Client, proxy/HTTPS configuration |
-| 404 for one user only | Ownership predicate before assuming the resource is missing globally |
-| 409 while importing | Distinguish transaction duplicate, category change and other constraint conflicts using error.code |
-| 429 | Back off; inspect auth/CSV request rate and trusted-proxy settings |
+| Evidence                            | Next check                                                                                         |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Connection refused on API port      | `docker compose ps`, then API startup logs                                                         |
+| Container exits with missing module | Check production dependencies; build success alone does not prove runtime boot                     |
+| Live is 200; ready is 503           | Database health/network, credentials, migration status                                             |
+| Ready is 503 after a fresh database | Run the migration service; do not enable synchronize                                               |
+| 401 with a previously valid JWT     | JWT expiry, session revokedAt/expiresAt, refresh replay                                            |
+| 403 from browser only               | Exact Origin, credentials mode, X-RASID-Client, proxy/HTTPS configuration                          |
+| 404 for one user only               | Ownership predicate before assuming the resource is missing globally                               |
+| 409 while importing                 | Distinguish transaction duplicate, category change and other constraint conflicts using error.code |
+| 429                                 | Back off; inspect auth/CSV request rate and trusted-proxy settings                                 |
 
 ## Backup and restore
 

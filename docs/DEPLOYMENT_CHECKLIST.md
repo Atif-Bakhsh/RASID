@@ -39,8 +39,13 @@ Set at build time:
 | `NEXT_PUBLIC_API_BASE_URL`  | Required absolute HTTPS API base ending exactly in `/api/v1`; no credentials or query |
 | `NEXT_PUBLIC_DEMO_EMAIL`    | Optional intentionally public synthetic demo email; set only with the password        |
 | `NEXT_PUBLIC_DEMO_PASSWORD` | Optional intentionally public synthetic demo password; set only with the email        |
+| `RASID_API_PROXY_ORIGIN`    | Optional server-side Railway API origin for the same-origin Vercel proxy; no path     |
 
 - [ ] Confirm the public value is same-site with the frontend origin.
+- [ ] Without a custom domain, set `NEXT_PUBLIC_API_BASE_URL` to the exact Vercel
+      production URL plus `/api/v1`, set `RASID_API_PROXY_ORIGIN` to the Railway
+      API origin, and rebuild. The Next.js rewrite forwards `/api/v1/*` without
+      exposing the Railway host to browser JavaScript.
 - [ ] Rebuild after changing it; `NEXT_PUBLIC_*` is browser-visible and build-bound.
 - [ ] Inspect emitted client assets: only intended `NEXT_PUBLIC_*` values may be
       exposed. No JWT secret, database credential, private host, or authentication
@@ -65,6 +70,10 @@ Set at build time:
 | `COOKIE_SECURE`            | `true` (startup rejects `false` in production)                                   |
 | `TRUST_PROXY_HOPS`         | Exact known proxy count, 0–3; never blanket trust                                |
 | `LOG_LEVEL`                | `log`, `warn`, or `error`                                                        |
+| `AI_ENABLED`               | `false` unless the optional analyst is intentionally enabled                     |
+| `OPENAI_API_KEY`           | Secret-manager value; required only when AI is enabled; never expose to frontend |
+| `OPENAI_MODEL`             | `gpt-5.6-luna` (default/cost-sensitive) or allow-listed `gpt-5.6-terra`          |
+| `AI_TIMEOUT_MS`            | 1,000–30,000; documented default 10,000                                          |
 
 Optional public-demo seed variables are `DEMO_EMAIL`, `DEMO_PASSWORD`, and
 `DEMO_MONTH`. In production, seeding additionally requires the explicit one-time
@@ -140,6 +149,8 @@ remove the opt-in after seeding. Migrations never create demo credentials.
 - [ ] Preview valid, invalid, and duplicate synthetic CSV rows; acknowledge invalid
       rows; commit and repeat the same commit ID.
 - [ ] Verify category conflict and session-revocation UI.
+- [ ] With AI disabled, confirm the analyst shows its localized optional-feature error while Overview remains usable.
+- [ ] If AI is enabled, generate one briefing and one out-of-scope question; verify evidence values match the deterministic API and logs contain metadata only.
 - [ ] Verify 401, 404, 409, 413, 422, 429, and a safe network/server failure where
       practical without disrupting other users.
 - [ ] Confirm Privacy, Terms, favicon, metadata, and demo notice.

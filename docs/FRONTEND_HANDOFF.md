@@ -6,7 +6,7 @@ Build a small, responsive, Arabic-first demonstration frontend for the **existin
 
 The product name is **RASID**. Arabic is the default language and the default document direction is `rtl`. Keep the English brand spelling RASID. A suitable subtitle is «وضوح مالي من بيانات تجريبية». Show a persistent, readable notice: «بيانات تجريبية فقط — لا يوجد اتصال بالبنوك». Support an English toggle for the demo and reviewers.
 
-Use a restrained visual style: clear type, ample spacing, neutral backgrounds, one primary accent, accessible contrast, and plain numeric summaries. This is a financial clarity dashboard, not a trading terminal. Avoid fake bank logos, fabricated connected-bank states, investment recommendations, celebratory profit claims, or an AI chat panel.
+Use a restrained visual style: clear type, ample spacing, neutral backgrounds, one primary accent, accessible contrast, and plain numeric summaries. This is a financial clarity dashboard, not a trading terminal. Avoid fake bank logos, fabricated connected-bank states, investment recommendations, celebratory profit claims, or a general AI chat interface. The implemented monthly analyst is a bounded evidence panel, not a bot persona.
 
 The frontend should live in a separate `frontend/` directory and keep its build/dependencies separate from the Nest backend. A small TypeScript client with routing, forms, and query caching is enough. Select the actual UI stack when implementing; the backend contract is framework-independent.
 
@@ -85,7 +85,9 @@ Use `GET /analytics/monthly?month=2026-09&currency=SAR`, `GET /budgets?month=...
 
 Show income, spending, and net cards; a category breakdown with accessible labels/table; a previous-month comparison; current budgets; and recurring obligation estimates in their own section. A `null` previous-period percentage means “no comparable baseline,” not infinity or 0%. State when the selected month is incomplete. Obligations are recurring estimates, not proven unpaid bills, and must not be added to spending again.
 
-Insights show `titleAr`/`titleEn`, the explanation, and an expandable “Why am I seeing this?” section rendering the returned facts and rule version. Keep the API's disclaimer visible. No local LLM calls are needed.
+Insights show `titleAr`/`titleEn`, the explanation, and an expandable “Why am I seeing this?” section rendering the returned facts and rule version. Keep the API's disclaimer visible.
+
+The separate monthly analyst calls `POST /insights/explain` only after the user requests a briefing or submits one optional question (maximum 300 characters). Send `month`, `currency`, the current `locale`, and optional `question`. Render the returned status, answer, evidence labels/values, prompt version, and disclaimer. The browser never calls a model provider or receives an API key. A `503 AI_UNAVAILABLE` affects only this panel; deterministic totals and observations must stay visible.
 
 For the untouched September 2026 seed, verify **income 12,300.00 SAR**, **spending 4,653.00 SAR**, and **net 7,647.00 SAR**. There are 13 September transactions across the two SAR accounts; a 14th transaction is in August. The food budget is 700.00, with spending 748.00 and remaining -48.00. Account balances are separate manual snapshots and do not have to equal net.
 
@@ -149,6 +151,7 @@ Invalidate transaction list, monthly analytics, budgets and insights after a tra
 - The untouched seed totals above reconcile; empty and zero-baseline months render correctly.
 - Valid/invalid/duplicate CSV rows, explicit acceptance and retried commit can be demonstrated.
 - Budget overspend, inactive obligations, and insight explanations reflect server facts.
+- The optional monthly analyst is on-demand, renders server evidence, and fails without hiding deterministic data.
 - Cross-user 404, invalid input, rate limiting and network failures produce honest UI states.
 - Responsive RTL, keyboard navigation and readable form errors are checked.
 - Frontend build and focused interaction tests pass; no tokens or real financial data are committed.

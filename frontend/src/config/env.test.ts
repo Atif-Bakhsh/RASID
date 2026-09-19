@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { getDemoCredentials } from './env';
+import { getApiProxyOrigin, getDemoCredentials } from './env';
 
 afterEach(() => vi.unstubAllEnvs());
 
@@ -24,5 +24,27 @@ describe('optional public demo credentials', () => {
     vi.stubEnv('NEXT_PUBLIC_DEMO_EMAIL', 'demo@example.test');
     vi.stubEnv('NEXT_PUBLIC_DEMO_PASSWORD', '');
     expect(() => getDemoCredentials()).toThrow(/must be set together/);
+  });
+});
+
+describe('optional server-side API proxy origin', () => {
+  it('is absent unless explicitly configured', () => {
+    vi.stubEnv('RASID_API_PROXY_ORIGIN', '');
+    expect(getApiProxyOrigin()).toBeNull();
+  });
+
+  it('accepts an origin without exposing an API path', () => {
+    vi.stubEnv(
+      'RASID_API_PROXY_ORIGIN',
+      'https://rasid-api-production.example.up.railway.app/',
+    );
+    expect(getApiProxyOrigin()).toBe(
+      'https://rasid-api-production.example.up.railway.app',
+    );
+  });
+
+  it('rejects credentials and paths', () => {
+    vi.stubEnv('RASID_API_PROXY_ORIGIN', 'https://api.example.test/api/v1');
+    expect(() => getApiProxyOrigin()).toThrow(/origin only/);
   });
 });

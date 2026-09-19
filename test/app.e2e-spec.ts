@@ -207,6 +207,23 @@ describe('RASID real PostgreSQL HTTP contract', () => {
       .send({ email: 'alice@example.test', password: 'Wrong-Password-Here!' })
       .expect(401);
     await api().get('/api/v1/accounts').expect(401);
+    await api()
+      .post('/api/v1/insights/explain')
+      .send({ currency: 'SAR', locale: 'en' })
+      .expect(401);
+    await api()
+      .post('/api/v1/insights/explain')
+      .set(auth())
+      .send({ currency: 'SAR', locale: 'en', question: 'x'.repeat(301) })
+      .expect(400);
+    const aiUnavailable = await api()
+      .post('/api/v1/insights/explain')
+      .set(auth())
+      .send({ month: '2026-09', currency: 'SAR', locale: 'en' })
+      .expect(503);
+    expect(body<{ error: { code: string } }>(aiUnavailable)).toMatchObject({
+      error: { code: 'AI_UNAVAILABLE' },
+    });
     await api().get('/api/v1/accounts').set(auth('forged')).expect(401);
     await api().get('/api/v1/accounts/not-a-uuid').set(auth()).expect(400);
     for (const extra of [

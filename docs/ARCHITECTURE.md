@@ -73,6 +73,14 @@ Invalid rows require explicit acknowledgment before valid rows are committed. Du
 
 Monthly analytics use a `REPEATABLE READ` transaction so the income, spending, category breakdown and comparison come from one snapshot. Insight computation shares one snapshot with its monthly facts and budgets. Independent HTTP requests can still observe different snapshots: the UI should invalidate related queries after writes.
 
+## Optional AI explanation boundary
+
+`POST /api/v1/insights/explain` is an authenticated, five-requests-per-minute, on-demand explanation endpoint. It reuses the same repeatable-read monthly snapshot as deterministic insights, then builds an allow-listed catalogue of aggregate facts. Categories, highest-utilization budgets, and rule observations are capped at eight entries each to bound tokens and cost. It does not send transactions, merchants, account names, email addresses, credentials, or uploaded CSV rows to the model.
+
+The OpenAI Responses API call is stateless (`store: false`), has a ten-second timeout and no automatic retry, and uses a one-way hash of the user ID as the safety identifier. The model must return a strict JSON status, short answer, and up to eight evidence IDs. RASID rejects unknown evidence IDs and any number in the prose that is not present in the trusted fact catalogue. Evidence values in the HTTP response always come from the database snapshot, never from model output; the displayed evidence is a bounded supporting register rather than an exhaustive citation for every number in the prose.
+
+`AI_ENABLED=false` is the default. Disabled, timed-out, malformed, or failed model calls return `503 AI_UNAVAILABLE`; the deterministic overview and rule explanations remain available. This is a bounded natural-language presentation layer, not a calculation engine, autonomous agent, bank-data integration, prediction system, or financial adviser.
+
 Offset pagination is explicit and stable within an unchanged dataset: default `postedAt DESC, id DESC`, page 1, limit 20, maximum 100. Concurrent inserts may shift subsequent pages; keyset pagination is a future choice if deep scrolling or large datasets justify it. Literal substring search intentionally avoids a trigram extension until measured traffic needs it.
 
 The implementation follows Nest's [validation](https://docs.nestjs.com/techniques/validation) and [authentication](https://docs.nestjs.com/security/authentication) integration points. The teaching exercises refer to the actual RASID files so these framework concepts can be verified in running requests.

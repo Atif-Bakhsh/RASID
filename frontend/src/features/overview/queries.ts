@@ -1,6 +1,12 @@
 import { queryOptions } from '@tanstack/react-query';
 import { protectedApiRequest } from '@/lib/api/client';
-import type { Budgets, Insights, MonthlyAnalytics, MonthScope } from './types';
+import type {
+  AiInsightExplanation,
+  Budgets,
+  Insights,
+  MonthlyAnalytics,
+  MonthScope,
+} from './types';
 
 // Resource prefixes support the handoff's later mutation invalidations.
 function options<T>(
@@ -27,3 +33,14 @@ export const overviewQueries = {
   insights: (userId: string, scope: MonthScope) =>
     options<Insights>('insights', '/insights', userId, scope),
 };
+
+export function requestAiExplanation(
+  scope: MonthScope,
+  locale: 'ar' | 'en',
+  question?: string,
+) {
+  return protectedApiRequest<AiInsightExplanation>('/insights/explain', {
+    method: 'POST',
+    body: { ...scope, locale, ...(question ? { question } : {}) },
+  });
+}

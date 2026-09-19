@@ -1,6 +1,10 @@
 'use client';
 
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQuery,
+  type UseQueryResult,
+} from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { RefreshCw } from 'lucide-react';
 import type { Currency } from '@/lib/api/contracts';
@@ -8,9 +12,15 @@ import { ApiClientError } from '@/lib/api/errors';
 import { useAuth } from '@/providers/auth-provider';
 import { useLocale } from '@/providers/locale-provider';
 import { overviewMessages } from './messages';
-import { overviewQueries } from './queries';
+import { overviewQueries, requestAiExplanation } from './queries';
 import { formatMoney, monthStatus } from './format';
-import type { Budgets, Insights, MonthlyAnalytics } from './types';
+import type {
+  AiInsightExplanation,
+  Budgets,
+  Insights,
+  MonthlyAnalytics,
+  MonthScope,
+} from './types';
 
 function useCopy() {
   const { locale } = useLocale();
@@ -380,6 +390,129 @@ export function InsightList({ data }: { data: Insights }) {
   );
 }
 
+function EvidenceValue({
+  item,
+}: {
+  item: AiInsightExplanation['evidence'][number];
+}) {
+  if (item.unit === 'SAR' || item.unit === 'USD' || item.unit === 'EUR')
+    return <Money value={String(item.value)} currency={item.unit} />;
+  if (item.unit === 'PERCENT') return <bdi dir="ltr">{item.value}%</bdi>;
+  return <bdi dir="ltr">{item.value}</bdi>;
+}
+
+export function AiAnalystPanel({ scope }: { scope: MonthScope }) {
+  const { t, locale } = useCopy();
+  const [question, setQuestion] = useState('');
+  const mutation = useMutation({
+    mutationFn: (value?: string) =>
+      requestAiExplanation(scope, locale, value?.trim() || undefined),
+  });
+  const result = mutation.data;
+  const statusLabel = result
+    ? result.status === 'ANSWERED'
+      ? t.analystAnswered
+      : result.status === 'OUT_OF_SCOPE'
+        ? t.analystOutOfScope
+        : t.analystInsufficient
+    : undefined;
+  return (
+    <section className="analyst-panel" aria-labelledby="analyst-title">
+      <div className="analyst-heading">
+        <div>
+          <span className="eyebrow">{t.analystEyebrow}</span>
+          <h2 id="analyst-title">{t.analystTitle}</h2>
+          <p>{t.analystDescription}</p>
+        </div>
+        <span className="analyst-mark" aria-hidden="true">
+          AI / 01
+        </span>
+      </div>
+      <button
+        type="button"
+        className="button analyst-primary"
+        disabled={mutation.isPending}
+        onClick={() => mutation.mutate(undefined)}
+      >
+        {mutation.isPending ? t.generating : t.generateBriefing}
+      </button>
+      <form
+        className="analyst-question"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (question.trim()) mutation.mutate(question);
+        }}
+      >
+        <label htmlFor="analyst-question">{t.analystQuestion}</label>
+        <textarea
+          id="analyst-question"
+          maxLength={300}
+          rows={2}
+          value={question}
+          placeholder={t.analystQuestionPlaceholder}
+          onChange={(event) => setQuestion(event.target.value)}
+        />
+        <div className="analyst-question-actions">
+          <small>
+            {300 - question.length} {t.charactersRemaining}
+          </small>
+          <button
+            type="submit"
+            className="button button--secondary"
+            disabled={mutation.isPending || !question.trim()}
+          >
+            {t.askAnalyst}
+          </button>
+        </div>
+      </form>
+      <div aria-live="polite">
+        {mutation.isError && (
+          <div className="analyst-error" role="alert">
+            <strong>{t.analystUnavailable}</strong>
+            <p>
+              {mutation.error instanceof ApiClientError
+                ? mutation.error.localizedMessage(locale)
+                : t.network}
+            </p>
+          </div>
+        )}
+        {result && (
+          <article
+            className={`analyst-result analyst-result--${result.status.toLowerCase()}`}
+          >
+            <header>
+              <span>{statusLabel}</span>
+              <code dir="ltr">{result.promptVersion}</code>
+            </header>
+            <p className="analyst-answer">{result.answer}</p>
+            <p className="api-disclaimer">
+              {locale === 'ar' ? result.disclaimerAr : result.disclaimerEn}
+            </p>
+            {!!result.evidence.length && (
+              <div className="analyst-evidence">
+                <div>
+                  <h3>{t.analystEvidence}</h3>
+                  <p>{t.analystEvidenceNote}</p>
+                </div>
+                <dl>
+                  {result.evidence.map((item) => (
+                    <div key={item.id}>
+                      <dt>{locale === 'ar' ? item.labelAr : item.labelEn}</dt>
+                      <dd>
+                        <EvidenceValue item={item} />
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            )}
+          </article>
+        )}
+      </div>
+    </section>
+  );
+}
+
 export function OverviewPage() {
   const { t } = useCopy();
   const { session } = useAuth();
@@ -482,6 +615,10 @@ export function OverviewPage() {
               </QuerySection>
             </div>
           </div>
+          <AiAnalystPanel
+            key={`${month}-${currency}-${t.analystTitle}`}
+            scope={scope}
+          />
         </>
       )}
     </div>

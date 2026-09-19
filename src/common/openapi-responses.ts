@@ -230,6 +230,33 @@ export function describeResponses(document: OpenAPIObject): OpenAPIObject {
         }),
       ),
     }),
+    AiInsightExplanation: object({
+      month,
+      currency,
+      locale: { type: 'string', enum: ['ar', 'en'] },
+      status: {
+        type: 'string',
+        enum: ['ANSWERED', 'INSUFFICIENT_DATA', 'OUT_OF_SCOPE'],
+      },
+      answer: text,
+      evidence: array(
+        object({
+          id: text,
+          labelAr: text,
+          labelEn: text,
+          value: { oneOf: [text, decimal] },
+          unit: {
+            type: 'string',
+            enum: ['SAR', 'USD', 'EUR', 'PERCENT', 'COUNT', 'MONTH', 'RULE'],
+          },
+        }),
+      ),
+      model: text,
+      promptVersion: text,
+      dataMode: { type: 'string', enum: ['DEMO_ONLY'] },
+      disclaimerAr: text,
+      disclaimerEn: text,
+    }),
     Budgets: object({ month, currency, data: array(ref('BudgetUsage')) }),
     ServiceInfo: object({
       name: text,
@@ -264,6 +291,7 @@ export function describeResponses(document: OpenAPIObject): OpenAPIObject {
     'get /api/v1/auth/sessions': array(ref('SessionRecord')),
     'get /api/v1/analytics/monthly': ref('MonthlyAnalytics'),
     'get /api/v1/insights': ref('Insights'),
+    'post /api/v1/insights/explain': ref('AiInsightExplanation'),
     'get /api/v1/budgets': ref('Budgets'),
     'get /api/v1/categories': array(ref('CategoryRecord')),
     'get /api/v1/imports': page('ImportSummary'),
